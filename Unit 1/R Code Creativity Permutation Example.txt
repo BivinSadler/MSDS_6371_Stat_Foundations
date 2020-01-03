@@ -1,0 +1,4 @@
+
+creativity <- read.table(file = "creativity.csv",header = T,sep = ","); # This reads it in if you directory is set to the right folder.create = data.frame(creativity)t.test(create$Score ~ create$Treatment)number_of_permutations = 10000;xbarholder = c();counter = 0;observed_diff = mean(subset(create, Treatment_S == "Intrinsic")$Score)-mean(subset(create, Treatment_S == "Extrinsic")$Score)for(i in 1:number_of_permutations){scramble = sample(create$Score,47);extrinsic = scramble[1:23];intrinsic = scramble[24:47];diff = mean(intrinsic)-mean(extrinsic);xbarholder[i] = diff;if(diff > observed_diff)counter = counter + 1;}hist(xbarholder);pvalue = counter / number_of_permutations;
+
+
