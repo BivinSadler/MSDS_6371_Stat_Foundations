@@ -1,0 +1,23 @@
+
+*to find the sample size required for a desired power;
+proc power;
+onesamplemeans
+sides = u
+mean = 4.3
+nullmean = 4
+stddev = 1.2
+ntotal = .
+power = .8 .7 .6
+;
+plot x = effect min = 4  max =5.5;
+run;
+
+proc power;
+twosamplemeans
+meandiff = 5 
+stddev = 24.03
+ntotal = .
+power = .8 .7  .6;
+plot x = effect min =4 max = 8;
+run;
+

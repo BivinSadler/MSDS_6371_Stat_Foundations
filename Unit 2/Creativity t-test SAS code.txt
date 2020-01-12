@@ -1,0 +1,81 @@
+data creativity;                                                                                                                           
+input treatment score;   /* 1 is extrinsic and 0 is intrinsic*/                                                                                                                                                                                                     
+datalines;                                                                                                                                                                                                                   
+1 5
+1 5.4
+1 6.1
+1 10.9
+1 11.8
+1 12
+1 12.3
+1 14.8
+1 15
+1 16.8
+1 17.2
+1 17.2
+1 17.4
+1 17.5
+1 18.5
+1 18.7
+1 18.7
+1 19.2
+1 19.5
+1 20.7
+1 21.2
+1 22.1
+1 24
+0 12
+0 12
+0 12.9
+0 13.6
+0 16.6
+0 17.2
+0 17.5
+0 18.2
+0 19.1
+0 19.3
+0 19.8
+0 20.3
+0 20.5
+0 20.6
+0 21.3
+0 21.6
+0 22.1
+0 22.2
+0 22.6
+0 23.1
+0 24
+0 24.3
+0 26.7
+0 29.7
+;
+                                                                                                                                                                                                                            
+proc print data = creativity;
+run; 
+
+proc sort data = creativity;
+by treatment;
+run;
+
+proc print data = creativity;
+run;
+
+/* Descriptive Statistics */
+proc univariate data = creativity;
+by treatment;
+run;
+
+/* critical values */
+data critval;
+cv = quantile("T", .975, 45); /* alpha  = .05  two sided test ... gives 95% CI */
+
+proc print data = critval;
+run;
+
+
+
+proc ttest data = creativity sides = 2 alpha = .05;
+class treatment;
+var score;
+run;
+        
