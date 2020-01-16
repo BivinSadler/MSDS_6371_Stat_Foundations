@@ -1,0 +1,6 @@
+PROC IMPORT OUT= WORK.EducationData 
+            DATAFILE= "C:\Users\26438728\Desktop\EducationData.csv" 
+            DBMS=CSV REPLACE;
+     GETNAMES=YES;
+     DATAROW=2; 
+RUN;
