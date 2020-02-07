@@ -1,0 +1,27 @@
+/*SAS Code */
+data anovaCT;
+input group x;
+datalines;
+1 3
+1 5
+1 7
+2 10 
+2 12
+2 14
+3 20
+3 22
+3 24
+;
+
+
+
+
+
+# Rcode
+
+anovaCT = c(1, 3,1, 5,1, 7, 2, 10, 2, 12,2, 14,3, 20,3, 22,3, 24)
+anovaCTMat = matrix(anovaCT, byrow = TRUE, ncol = 2)
+anovaCTDF = data.frame(anovaCTMat)
+fit = aov(X1~X2, data = anovaCTDF)
+summary(fit)
+
