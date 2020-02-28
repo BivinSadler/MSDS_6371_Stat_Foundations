@@ -1,0 +1,60 @@
+data movie;                                                                                                                             
+input budget gross;                                                                                                                     
+datalines;                                                                                                                              
+62 65                                                                                                                                   
+90 64                                                                                                                                   
+50 48                                                                                                                                   
+35 57   
+200 601                                                                                                                                
+100 146                                                                                                                                 
+90  47                                                                                                                                  
+;                                                                                                                                       
+                                                                                                                                        
+                                                                                                                                        
+                                                                                                                                        
+data heights;                                                                                                                           
+input mother daughter;                                                                                                                  
+datalines;                                                                                                                              
+63 58.6                                                                                                                                 
+67 64.7                                                                                                                                 
+64 65.3                                                                                                                                 
+60 61.0                                                                                                                                 
+65 65.4                                                                                                                                 
+67 67.4                                                                                                                                 
+59 60.9                                                                                                                                 
+60 63.1                                                                                                                                 
+;                   
+
+
+data crickets;
+input chirps temp;
+datalines;
+882 69.7
+1188 93.3
+1104 84.3
+864 76.3
+1200 88.6
+1032 82.6
+960 71.6
+900 79.6
+;
+
+data marathon;
+input temp time;
+datalines;
+55 145.283
+61 148.717
+49 148.300
+62 148.100
+70 147.617
+73 146.400
+51 144.667
+57 147.533
+;
+
+                                                                                                                    
+  
+
+
+
+
