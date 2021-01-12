@@ -1,0 +1,83 @@
+---
+title: "CLT"
+author: "Bivin"
+date: ""
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Simulator to Demonstrate CLT
+
+## Control Parameters
+```{r}
+n1 = 50 # sample size per sample for 1st distribution
+n2 = 50 # sample size per sample for 2nd distribution (we will compare these distribuions) 
+simulations = 1000 #number of samples and thus number of xbars we will generate.  
+#mu = 0; # mean parameter for use with normal distribuions
+#sigma = 1; # standard deviation parameter for use with normal distribuions
+population1  = rnorm(10000000,10,1)
+hist(population1, col = "blue", main = "Histogram of the Population 1")
+mean(population1)
+sd(population1)
+
+population2 = rnorm(10000000,10,1)
+hist(population2, col = "red", main = "Histogram of the Population 2")
+mean(population2)
+sd(population2)
+
+```
+
+## Data Holder
+```{r}
+xbar_holder1 = numeric(simulations) # This will hold all the sample means for the first distribution.
+xbar_holder2 = numeric(simulations) # This will hold all the sample means for the second distribution.
+DiffOfxbars = numeric(simulations) # This will hold all the difference of sample means. 
+```
+
+## Simulate and Store
+Generate 1000 samples each of size 10 and find the mean of each sample.  Then store each mean in the xbar_holder vector.
+
+```{r}
+for (i in 1:simulations)
+{ 
+  #sample1 = rnorm(n1,mean = mu, sd = sigma)
+  #sample2 = rnorm(n2,mean = mu, sd = sigma)
+  sample1 = sample(population1, n1)
+  sample2 = sample(population2, n2)
+  
+  xbar1 = mean(sample1)
+  xbar2 = mean(sample2)
+  xbar_holder1[i] = xbar1
+  xbar_holder2[i] = xbar2
+  DiffOfxbars[i] = xbar1 - xbar2
+}
+```
+
+## display the distribution of sample means (plot a histogram of the sample means)
+```{r}
+par(mfrow = c(3,1))
+hist(xbar_holder1, col = "blue", main = paste("Distribution of the sample mean: n = ", n1), xlab = "Dist 1 Sample Means")
+hist(xbar_holder2, col = "red", main = paste("Distribution of the sample mean: n = ", n2), xlab = "Dist 2 Sample Means")
+hist(DiffOfxbars, col = "green", main = "Distribution of the difference of sample means", xlab = "Difference of sample means")
+
+
+```
+
+## summary statistics of the distribution of the simulated sample means. 
+```{r}
+summary(xbar_holder1) #5 number summary and the mean
+summary(xbar_holder2) #5 number summary and the mean
+sd(xbar_holder1) # standard deviation of dstribuion 1
+sd(xbar_holder2) #standard deviation of distribuion 2
+
+mean(DiffOfxbars)
+sd(DiffOfxbars)
+
+```
+
+

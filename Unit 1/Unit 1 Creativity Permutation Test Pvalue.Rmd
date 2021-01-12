@@ -1,0 +1,191 @@
+---
+title: 'Unit 1: Creativity Randomization Test Pvalue'
+author: "Bivin Sadler"
+date: "6/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Input the Data
+
+This code loads and views the data.
+
+```{r}
+
+library(tidyverse)
+# Read in Data
+creativity <- read.table(file.choose(),header = T,sep = ","); # This reads in the data.
+
+```
+
+
+## Calculate the Observed Difference in Means
+
+This code calculates and records the difference in means: xbarIntrinsic - xbarExtrinsic = 21.16667
+
+```{r}
+
+xbars = creativity %>% group_by(Treatment_S) %>% summarize(mean = mean(Score))
+xbarNminusT = xbars[2,2] - xbars[1,2] # observed difference xbarIntrinsic - xbarExtrinsic = 21.16667
+xbarNminusT
+
+```
+
+
+## Demonstrate the Randomization
+
+Assuming that the "Intrinsic" treatment has no effect on the creativity scores, each person should score the same on the test no matter if they were placed in the New or Traditional group.  That is, if the "New" method has no effect on the scores then the distribution of scores from the population if everyone in the population was put in the "Intrinsic" group is the exact same (equal) as the distribution of scores from the population if everyone in the population was put in the "Extrinsic" group.  This *means* that the *means* of those distributions are equal (pun intended!)  This is exactly what the null hypothesis is saying:  $Ho: \mu_{Instrinsic} = \mu_{Extrinsic}$ or equivalently  $Ho: \mu_{Intrinsic} - \mu_{Extrinsic} = 0$.
+
+This code shows will randomly assign the 24 "Intrinsic" labels and the 23 "Extrinsic" labels to the creativity scores so we can begin to build the distribution of the differences of means under the assumption that the treatment has no effect (under the assumption that the null hypothesis is true.)  This code will also show the difference of sample means.  Note that under the null hypothesis that the means are equal, the difference of sample means should be relatively close to zero.  
+
+Run the code a couple of times and make note of how the difference of sample means ($\overline{x}_{Intrinsic} - \overline{x}_{Extrinsic}$) changes... that is, run the code a few times to get an idea of how the difference of sample means is distributed.  
+
+```{r}
+
+scrambledLabels = sample(creativity$Treatment_S,47); #shuffle the Labels
+
+creativityTemp = creativity
+creativityTemp$Treatment_S = scrambledLabels
+
+xbars = creativityTemp %>% group_by(Treatment_S) %>% summarize(mean = mean(Score))
+xbarNminusT = xbars[2,2] - xbars[1,2] # observed difference xbarIntrinsic - xbarExtrinsic = 21.16667
+xbarNminusT
+
+```
+
+
+
+## Build the Distribution
+
+Now we will let the computer do this for us 10,000 times.  Since there are $_{47}C_{23} = 16,123,800,000,000$ possible combinations, we will get the same permuation of labels twice.  This will allow us to better view the distribution of ($\overline{x}_{Intrinsic} - \overline{x}_{Extrinsic}$).  This allows us to see how ($\overline{x}_{Intrinsic} - \overline{x}_{Extrinsic}$) behaves if we ran this experiment 10,000 times, each time assigning participants to treatment groups randomly.  
+
+If the null hypothesis is true and the treatment ("Intrinsic") has no effect on the creativity scores and thus the population means of the scores from each group are the same, then the difference of means from the samples should be just as likely to be positive as negative and thus 0 should be the center of the distribution.  Run it and see what you get!  
+
+```{r Oversampled PValue}
+set.seed(2) # So we all get the same randomizations and thus the same values ... comment this out to see how the result changes based on the randomization.
+
+xbarDiffHolder = numeric(10000)
+
+for (i in 1:10000)
+{
+scrambledLabels = sample(creativity$Treatment_S,47); #shuffle the Labels
+
+creativityTemp = creativity
+creativityTemp$Treatment_S = scrambledLabels
+
+xbars = creativityTemp %>% group_by(Treatment_S) %>% summarize(mean = mean(Score))
+xbarNminusT = xbars[2,2] - xbars[1,2] # observed difference xbarIntrinsic - xbarExtrinsic = 21.16667
+xbarNminusT
+  xbarDiffHolder[i] = xbarNminusT$mean
+  
+}
+
+
+df = data.frame(xbarDiffs = xbarDiffHolder)
+
+g = df %>% ggplot(mapping = aes(x = xbarDiffs)) + 
+  geom_histogram(bins = 25, fill = "cornflowerblue", size = 0.1) +
+  ggtitle("Histogram of the Permutation Distribution of the Difference of Sample Means Scores")
+g
+
+
+```
+
+
+
+## Calculating the Pvalue
+
+Pvalue = "probability of observing by random chance a result as extreme or more extreme than what was observed in the study under the assumption that the null hypothesis is true." 
+
+In the study, we drew one sample of 17 and the difference in the sample means between those that recieved the "New" study method and those that received the "Traditional" study method was found to be 21.16667 points. The pvalue will then the probability that, if the "New" method does not have an effect on the scores with respect to the "Traditional" effect, that we would observe a result as extreme ore more extreme than 21.16667 points.  
+
+The good news is, we have an estimate of how this statistic behaves (is distributed) in just this case ... in the case where the "New" method has no effect on the scores with respect to the "Traditional" group.  We just built that distribution (aka the "Null distribution.")
+
+Therefore we simpy have to count how many of the 10,000 differences of means we calculated earlier are greater than than 21.16667 or less than -21.16667.  
+
+
+```{r}
+num_more_extreme = sum((abs(xbarDiffHolder)) >= 4.14)
+num_more_extreme
+
+pvalue = num_more_extreme / 10000
+pvalue
+```
+
+## Decision
+
+Our usual threshhold for the decsion is 5%.  That is, if we conducted this experiment many, many times (and the null hypothesis was true), and the result that we observed would have been that extreme in less than 5% of the experiments we ran, then we will say that is an "unlikely" result to have happened by chance and we will then decide that the null hypothesis is false and thus that what we observed is a more usual result under a different assumption (that the "New" treatment actually helped the students and thus caused the increase in scores.)
+
+In this case the pvalue is .0864 and thus 8.64% of the differences in sample means from the 10,000 simulated experiements as extreme or more extreme than 21.1667 points thus this is not deemed to be an "unlikely" result to have observed by chance if the null hypothesis were true.  Therefore, we will not reject the null hypothesis (Fail To Reject Ho) that the mean score of the population of those that take the "New" method is different from the mean score of the population that take the "Traditional" method.  
+
+## Conclusion
+
+The decision is understood by data scientiest.  The conclusion is written in the context of the problem and is largely in easy to understand and non technical terms.  
+
+**The Conclusion: There is not enough evidence to suggest that the mean score of those that would take the "New" method is different from the mean score of those that would take the "Traditional" method (pvalue = .0864).**
+
+Note that we did include the pvalue which is a technical statistic however, many in today's world know what a pvalue is and will appreciate the quantification of the evidence.  Those that do not know what it is, will likely just ingnore it and get the main idea from the written conclusion.  
+
+Finally, go back and uncomment the set.seed(2) line of code in the second to last chunk.  This will allow you to generate a unique randomization from the one that I generated.  You will get a different pvalue although it should still lead you to fait to reject (FTR) the null hypothesis.  Just search for "set.seed()" Give it a try!
+
+
+
+
+
+
+
+# change to data frame to work with t.test
+create = data.frame(creativity)
+# genenerate the difference in means a pvalue to compare with later.
+t.test(create$Score ~ create$Treatment)
+
+# number of permutations
+number_of_permutations = 10000;
+#Thi will hold the differnce of sample means generated under the assumption of equality
+xbarholder = c();
+
+# this is the observed difference in sample means that we observed.. is the same the one from t.test above. 
+observed_diff = mean(subset(create, Treatment_S == "Intrinsic")$Score)-mean(subset(create, Treatment_S == "Extrinsic")$Score)
+
+# This counts the number of diffrences of sample means from each permutation that were more extreme than the one observed (diffreence from t.test above)
+counter = 0;
+
+# this loop run all the permutations and generages and remembers the difference of sample means for each permutation of the labels ... 
+# remember, the reason we can permute the labels is because we are assuming the null hypothesis to be true... that the means are 
+# equal under and thus that the treatment has no effect.  That is, that the result we saw for an individual would have been just as 
+#likely to have happened if he or she were in the other group / treatment."
+
+#set.seed(2)
+
+for(i in 1:number_of_permutations)
+{
+  scramble = sample(create$Score,47); #shuffle the observations
+  # the below two lines effectively radnomly applies the extrinsic and intrinsic labels to the observations. 
+  extrinsic = scramble[1:23]; # give the first 23 the extrinsic label
+  intrinsic = scramble[24:47]; #give the rest the intrinsic lable. 
+  diff = mean(intrinsic)-mean(extrinsic); # find the difference in sample means from current permutation. under the equality assumtion, most of the time this should be close to zero
+  xbarholder[i] = diff; # remember the differene in sample means to compare to the one we observed in the study... 
+  
+  #if the one we observed sticks out then it will be hard to for the diffs to exceed it and that will be evidence that is doesn't 
+  #belong and thus is evidence that the difference is not zero and thus that the means are not equal and thus that there is a 
+  #treatment effect. 
+  
+  #evidence that the means are not equal 
+  if(abs(diff) > observed_diff) 
+    counter = counter + 1;
+  
+}
+hist(xbarholder);
+pvalue = counter / number_of_permutations; 
+pvalue # if set.seed(2) then pvalue = .0049
+
+# the pvalue is the percentage of the differences in sample means that were generaged under 
+#the assumption of equal means exceed the one we observed.  If this percentage is small, then this is evidence that the observed 
+#difference does not belong in this distribution and thus that the difference is not zero and thus that the means are not equal and thus that there is a 
+#treatment effect. 
+
+
+
