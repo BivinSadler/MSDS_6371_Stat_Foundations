@@ -1,0 +1,173 @@
+---
+title: "6371 Unit 1 Test Prep Permutation Test Code"
+author: "Bivin Sadler"
+date: "6/17/2020"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Input the Data
+
+This code loads and views the data.
+
+```{r}
+
+library(tidyverse)
+#Test Prep Example
+# Read in Data
+scoreDF = data.frame(Score = c(37,49,55,77,23,31,46), Treatment = c("New","New","New","New","Traditional","Traditional","Traditional"))
+
+scoreDF
+
+```
+
+
+## Calculate the Observed Difference in Means
+
+This code calculates and records the difference in means: xbarNew - xbarTraditional = 21.16667
+
+```{r}
+
+xbars = scoreDF %>% group_by(Treatment) %>% summarize(mean = mean(Score))
+xbarNminusT = xbars[1,2] - xbars[2,2] # observed difference xbarNew - xbarTraditional = 21.16667
+xbarNminusT
+
+```
+
+
+## Demonstrate the Randomization
+
+Assuming that the "New" method has no effect on the scores, each person should score the same on the test no matter if they were placed in the New or Traditional group.  That is, if the "New" method has no effect on the scores then the distribution of scores from the population if everyone in the population was put in the "New" group is the exact same (equal) as the distribution of scores from the population if everyone in the population was put in the "Traditional" group.  This means that the means of those distributions are equal (pun intended!)  This is exactly what the null hypothesis is saying: Ho: mu_New = mu_Traditional $\mu_{New} = \mu_{Traditional}$ or equivalently  $\mu_{New} - \mu_{Traditional} = 0$.
+
+This code shows will randomly assign the 3 "New" labels and the 3 "Treatment" labels to the scores so we can begin to build the distribution of the difference of means under the assumption that the treatment has now effect (under the assumption that the null hypothesis is true.)  This code will also show the difference of sample means.  Note that under the null hypothesis that the means are equal, the difference of sample means should be relatively close to zero.  
+
+Run the code a couple of times and make note of how the difference of sample means ($\overline{x}_{New} - \overline{x}_{Traditional}$) changes... that is run the code a few times to get an idea of how the difference of sample means is distributed.  
+
+```{r}
+
+scrambledLabels = sample(c("New","New","New","New","Traditional","Traditional","Traditional"),7)
+scoreDF$Treatment = scrambledLabels
+
+scoreDF
+
+xbars = scoreDF %>% group_by(Treatment) %>% summarize(mean = mean(Score))
+xbarNminusT = xbars[1,2] - xbars[2,2] # observed difference xbarNew - xbarTraditional = 21.16667
+
+xbarNminusT
+
+```
+
+
+
+## Build the Distribution
+
+Now we will let the computer do this for us 10,000 times.  Since there are only $_{7}C_{3} = 35$ possible combinations, we will get the same permuation of labels twice.  This will allow us to better view the distribution of ($\overline{x}_{New} - \overline{x}_{Traditional}$).  This allow us to see how ($\overline{x}_{New} - \overline{x}_{Traditional}$) behaves if we ran this experiment 10,000 times, each time assigning participants to treatment groups randomly.  
+
+If the null hypothesis is true and the treatment ("New") has no effect on the scores and thus the population means of the scores from each group are the same, then the difference of means from the samples should be just as likely to be positive as negative and thus 0 should be the center of the distribution.  Run it and see what you get!  
+
+```{r Oversampled PValue}
+set.seed(2) # So we all get the same randomizations and thus the same values ... comment this out to see how the result changes based on the randomization.
+
+xbarDiffHolder = numeric(10000)
+
+for (i in 1:10000)
+{
+  scrambledLabels = sample(c("New","New","New","New","Traditional","Traditional","Traditional"),7)
+  scoreDF$Treatment = scrambledLabels
+
+  scoreDF
+
+  xbars = scoreDF %>% group_by(Treatment) %>% summarize(mean = mean(Score))
+  xbarNminusT = xbars[1,2]$mean - xbars[2,2]$mean # observed difference xbarNew - xbarTraditional = 21.16667
+  
+  xbarDiffHolder[i] = xbarNminusT
+}
+
+
+df = data.frame(xbarDiffs = xbarDiffHolder)
+
+# With superimposed normal distribution
+g = df %>% ggplot(mapping = aes(x = xbarDiffs)) + 
+  geom_histogram(aes(y = ..density..),bins = 25, fill = "cornflowerblue", size = 0.1) +
+  stat_function(fun = dnorm, args = list(mean = mean(xbarDiffHolder), sd = sd(xbarDiffHolder)), color = "darkred")
+g
+
+```
+
+
+
+## Calculating the Pvalue
+
+Pvalue = "probability of observing by random chance a result as extreme or more extreme than what was observed in the study under the assumption that the null hypothesis is true." 
+
+In the study, we drew one sample of 17 and the difference in the sample means between those that recieved the "New" study method and those that received the "Traditional" study method was found to be 21.16667 points. The pvalue will then the probability that, if the "New" method does not have an effect on the scores with respect to the "Traditional" effect, that we would observe a result as extreme ore more extreme than 21.16667 points.  
+
+The good news is, we have an estimate of how this statistic behaves (is distributed) in just this case ... in the case where the "New" method has no effect on the scores with respect to the "Traditional" group.  We just built that distribution (aka the "Null distribution.")
+
+Therefore we simpy have to count how many of the 10,000 differences of means we calculated earlier are greater than than 21.16667 or less than -21.16667.  
+
+
+```{r}
+num_more_extreme = sum((abs(xbarDiffHolder)) >= 21.16667)
+num_more_extreme
+
+pvalue = num_more_extreme / 10000
+pvalue
+```
+
+## Decision
+
+Our usual threshhold for the decsion is 5%.  That is, if we conducted this experiment many, many times (and the null hypothesis was true), and the result that we observed would have been that extreme in less than 5% of the experiments we ran, then we will say that is an "unlikely" result to have happened by chance and we will then decide that the null hypothesis is false and thus that what we observed is a more usual result under a different assumption (that the "New" treatment actually helped the students and thus caused the increase in scores.)
+
+In this case the pvalue is .0864 and thus 8.64% of the differences in sample means from the 10,000 simulated experiements as extreme or more extreme than 21.1667 points thus this is not deemed to be an "unlikely" result to have observed by chance if the null hypothesis were true.  Therefore, we will not reject the null hypothesis (Fail To Reject Ho) that the mean score of the population of those that take the "New" method is different from the mean score of the population that take the "Traditional" method.  
+
+## Conclusion
+
+The decision is understood by data scientiest.  The conclusion is written in the context of the problem and is largely in easy to understand and non technical terms.  
+
+**The Conclusion: There is not enough evidence to suggest that the mean score of those that would take the "New" method is different from the mean score of those that would take the "Traditional" method (pvalue = .0864).**
+
+Note that we did include the pvalue which is a technical statistic however, many in today's world know what a pvalue is and will appreciate the quantification of the evidence.  Those that do not know what it is, will likely just ingnore it and get the main idea from the written conclusion.  
+
+Finally, go back and uncomment the set.seed(2) line of code in the second to last chunk.  This will allow you to generate a unique randomization from the one that I generated.  You will get a different pvalue although it should still lead you to fait to reject (FTR) the null hypothesis.  Just search for "set.seed()" Give it a try!
+
+
+## Appendix: Exact Pvalue
+
+This appendix holds code that will generate the 35 permutations / randomizations, their corresponding difference of sample means, and a pvalue the quantifies how likely / unlikely it is that we see something as extreme or more extreme that what we observed the one time we actually conducted the experiment. 
+
+```{r Exact PValue}
+
+Students = c(1,2,3,4,5,6,7)
+NewSpots = combn(Students,4)
+NullDistributionGroupings = list()
+DiffOfSampleMeans = numeric(35)
+
+for (i in 1:35)
+{
+scoreDFTemp = scoreDF
+scoreDFTemp[NewSpots[,i],2]="New"
+scoreDFTemp[-NewSpots[,i],2]="Traditional"
+NullDistributionGroupings[[i]] = scoreDFTemp
+xbars = scoreDFTemp %>% group_by(Treatment) %>% summarize(mean = mean(Score))
+xbarNminusT = xbars[1,2]$mean - xbars[2,2]$mean 
+DiffOfSampleMeans[i] = xbarNminusT
+}
+
+NullDistributionGroupings
+DiffOfSampleMeans
+hist(DiffOfSampleMeans)
+pvalue = sum(abs(DiffOfSampleMeans)>=21.1667)/35
+pvalue
+```
+
+
+
+
+

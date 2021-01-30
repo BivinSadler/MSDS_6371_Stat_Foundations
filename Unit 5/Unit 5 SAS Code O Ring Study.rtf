@@ -1,0 +1,187 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2513
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fswiss\fcharset0 Helvetica-Bold;}
+{\colortbl;\red255\green255\blue255;\red0\green128\blue0;\red0\green0\blue128;\red0\green128\blue128;
+\red0\green0\blue255;\red128\green0\blue128;}
+{\*\expandedcolortbl;;\csgenericrgb\c0\c50196\c0;\csgenericrgb\c0\c0\c50196;\csgenericrgb\c0\c50196\c50196;
+\csgenericrgb\c0\c0\c100000;\csgenericrgb\c50196\c0\c50196;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs20 \cf2 /*O-Ring Study */\cf0 \
+\
+
+\f1\b \cf3 proc
+\f0\b0 \cf0  
+\f1\b \cf3 iml
+\f0\b0 \cf0 ;\
+Warm = \{
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 0
+\f0\b0 \cf0 ,
+\f1\b \cf4 1
+\f0\b0 \cf0 ,
+\f1\b \cf4 1
+\f0\b0 \cf0 ,
+\f1\b \cf4 2
+\f0\b0 \cf0 \};\
+Cold = \{
+\f1\b \cf4 1
+\f0\b0 \cf0 ,
+\f1\b \cf4 1
+\f0\b0 \cf0 ,
+\f1\b \cf4 1
+\f0\b0 \cf0 ,
+\f1\b \cf4 3
+\f0\b0 \cf0 \};\
+obsdiff = mean(Warm) - mean(Cold);\
+\cf5 print\cf0  obsdiff;\
+\cf5 call\cf0  randseed(
+\f1\b \cf4 12345
+\f0\b0 \cf0 );                             \cf2 /* set random number seed */\cf0 \
+alldata = Warm // Cold;                        \cf2 /* stack data in a single vector */\cf0 \
+N1 = nrow(Warm);  N = N1 + nrow(Cold);\
+NRepl = 
+\f1\b \cf4 9999
+\f0\b0 \cf0 ;                                     \cf2 /* number of permutations */\cf0 \
+nulldist = j(NRepl,
+\f1\b \cf4 1
+\f0\b0 \cf0 );                   \cf2 /* allocate vector to hold results */\cf0 \
+\
+x = sample(alldata, N//NRepl, \cf6 "WOR"\cf0 );               \cf2 /* create all resamples */\cf0 \
+nulldist = x[,
+\f1\b \cf4 1
+\f0\b0 \cf0 :N1][,:] - x[,(N1+
+\f1\b \cf4 1
+\f0\b0 \cf0 ):N][,:]; \cf2 /* compute all mean differences */\cf0 \
+ \
+\cf5 title\cf0  \cf6 "Histogram of Null Distribution"\cf0 ;\
+refline = \cf6 "refline "\cf0  + char(obsdiff) + \cf6 " / axis=x lineattrs=(color=red);"\cf0 ;\
+\cf5 call\cf0  Histogram(nulldist) other=refline;\
+\
+\cf5 create\cf0  newds \cf5 from\cf0  nulldist;                                                                                                                                                                                                       \
+\cf5 append\cf0  \cf5 from\cf0  nulldist; \
+\
+
+\f1\b \cf3 run
+\f0\b0 \cf0 ;\
+\
+\
+
+\f1\b \cf3 data
+\f0\b0 \cf0  pvaluecalc;\
+\cf5 set\cf0  newds;\
+count = 
+\f1\b \cf4 0
+\f0\b0 \cf0 ;\
+\cf5 if\cf0  (COL1 <= -
+\f1\b \cf4 1.3
+\f0\b0 \cf0 ) \cf5 then\cf0  count = count + 
+\f1\b \cf4 1
+\f0\b0 \cf0 ;\
+pvalue = count / 
+\f1\b \cf4 10000
+\f0\b0 \cf0 ;\
+
+\f1\b \cf3 run
+\f0\b0 \cf0 ;\
+\
+
+\f1\b \cf3 proc
+\f0\b0 \cf0  
+\f1\b \cf3 univariate
+\f0\b0 \cf0  \cf5 data\cf0  = pvaluecalc;\
+\cf5 var\cf0  pvalue;\
+\cf5 output\cf0  \cf5 out\cf0  = pvalue \cf5 sum\cf0  = pvalue;\
+
+\f1\b \cf3 run
+\f0\b0 \cf0 ;\
+\
+
+\f1\b \cf3 proc
+\f0\b0 \cf0  
+\f1\b \cf3 print
+\f0\b0 \cf0  \cf5 data\cf0  = pvalue;\
+
+\f1\b \cf3 run
+\f0\b0 \cf0 ;\
+\
+\
+\
+\
+\cf2 /* T-Test for Comparison */\cf0 \
+\
+
+\f1\b \cf3 data
+\f0\b0 \cf0  Oring;\
+\cf5 input\cf0  failures temp $;\
+\cf5 datalines\cf0 ;\
+1	Cool\
+1	Cool\
+1	Cool\
+3	Cool\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+0	Warm\
+1	Warm\
+1	Warm\
+2	Warm\
+;\
+\
+
+\f1\b \cf3 proc
+\f0\b0 \cf0  
+\f1\b \cf3 ttest
+\f0\b0 \cf0  \cf5 data\cf0  = Oring;\
+\cf5 class\cf0  temp;\
+\cf5 var\cf0  failures;\
+
+\f1\b \cf3 run
+\f0\b0 \cf0 ;\
+\
+}

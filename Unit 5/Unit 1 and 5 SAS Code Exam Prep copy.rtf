@@ -1,0 +1,312 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2513
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fswiss\fcharset0 Helvetica-Bold;}
+{\colortbl;\red255\green255\blue255;\red0\green128\blue0;\red0\green0\blue128;\red0\green128\blue128;
+\red0\green0\blue255;\red128\green0\blue128;}
+{\*\expandedcolortbl;;\csgenericrgb\c0\c50196\c0;\csgenericrgb\c0\c0\c50196;\csgenericrgb\c0\c50196\c50196;
+\csgenericrgb\c0\c0\c100000;\csgenericrgb\c50196\c0\c50196;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs20 \cf2 /*Permuation code from proc iml programmer. */\cf0 \
+\cf2 /* https://blogs.sas.com/content/iml/2014/11/21/resampling-in-sas.html */\cf0 \
+\
+
+\f1\b \cf3 proc
+\f0\b0 \cf0  
+\f1\b \cf3 iml
+\f0\b0 \cf0 ;\
+G1 = \{
+\f1\b \cf4 27
+\f0\b0 \cf0 , 
+\f1\b \cf4 19
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 , 
+\f1\b \cf4 23
+\f0\b0 \cf0 , 
+\f1\b \cf4 17
+\f0\b0 \cf0 , 
+\f1\b \cf4 21
+\f0\b0 \cf0 , 
+\f1\b \cf4 24
+\f0\b0 \cf0 , 
+\f1\b \cf4 31
+\f0\b0 \cf0 , 
+\f1\b \cf4 26
+\f0\b0 \cf0 , 
+\f1\b \cf4 28
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 , 
+\f1\b \cf4 27
+\f0\b0 \cf0 , 
+\f1\b \cf4 19
+\f0\b0 \cf0 , 
+\f1\b \cf4 25
+\f0\b0 \cf0 , 
+\f1\b \cf4 31
+\f0\b0 \cf0 , 
+\f1\b \cf4 24
+\f0\b0 \cf0 , 
+\f1\b \cf4 28
+\f0\b0 \cf0 , 
+\f1\b \cf4 24
+\f0\b0 \cf0 , 
+\f1\b \cf4 29
+\f0\b0 \cf0 , 
+\f1\b \cf4 21
+\f0\b0 \cf0 , 
+\f1\b \cf4 21
+\f0\b0 \cf0 , 
+\f1\b \cf4 18
+\f0\b0 \cf0 , 
+\f1\b \cf4 27
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 \};\
+G2 = \{
+\f1\b \cf4 21
+\f0\b0 \cf0 , 
+\f1\b \cf4 19
+\f0\b0 \cf0 , 
+\f1\b \cf4 13
+\f0\b0 \cf0 , 
+\f1\b \cf4 22
+\f0\b0 \cf0 , 
+\f1\b \cf4 15
+\f0\b0 \cf0 , 
+\f1\b \cf4 22
+\f0\b0 \cf0 , 
+\f1\b \cf4 15
+\f0\b0 \cf0 , 
+\f1\b \cf4 22
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 , 
+\f1\b \cf4 12
+\f0\b0 \cf0 , 
+\f1\b \cf4 24
+\f0\b0 \cf0 , 
+\f1\b \cf4 24
+\f0\b0 \cf0 , 
+\f1\b \cf4 21
+\f0\b0 \cf0 , 
+\f1\b \cf4 19
+\f0\b0 \cf0 , 
+\f1\b \cf4 18
+\f0\b0 \cf0 , 
+\f1\b \cf4 16
+\f0\b0 \cf0 , 
+\f1\b \cf4 23
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 \};\
+obsdiff = mean(G1) - mean(G2);\
+\cf5 print\cf0  obsdiff;\
+\cf5 call\cf0  randseed(
+\f1\b \cf4 12345
+\f0\b0 \cf0 );                             \cf2 /* set random number seed */\cf0 \
+alldata = G1 // G2;                        \cf2 /* stack data in a single vector */\cf0 \
+N1 = nrow(G1);  N = N1 + nrow(G2);\
+NRepl = 
+\f1\b \cf4 9999
+\f0\b0 \cf0 ;                                     \cf2 /* number of permutations */\cf0 \
+nulldist = j(NRepl,
+\f1\b \cf4 1
+\f0\b0 \cf0 );                   \cf2 /* allocate vector to hold results */\cf0 \
+\cf5 do\cf0  k = 
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 to\cf0  NRepl;\
+   x = sample(alldata, N, \cf6 "WOR"\cf0 );                       \cf2 /* permute the data */\cf0 \
+   nulldist[k] = mean(x[
+\f1\b \cf4 1
+\f0\b0 \cf0 :N1]) - mean(x[(N1+
+\f1\b \cf4 1
+\f0\b0 \cf0 ):N]);  \cf2 /* difference of means */\cf0 \
+\cf5 end\cf0 ;\
+\
+\cf5 title\cf0  \cf6 "Histogram of Null Distribution"\cf0 ;\
+refline = \cf6 "refline "\cf0  + char(obsdiff) + \cf6 " / axis=x lineattrs=(color=red);"\cf0 ;\
+\cf5 call\cf0  Histogram(nulldist) other=refline;\
+
+\f1\b \cf3 run
+\f0\b0 \cf0 ;\
+\
+\
+\
+
+\f1\b \cf3 proc
+\f0\b0 \cf0  
+\f1\b \cf3 iml
+\f0\b0 \cf0 ;\
+G1 = \{
+\f1\b \cf4 27
+\f0\b0 \cf0 , 
+\f1\b \cf4 19
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 , 
+\f1\b \cf4 23
+\f0\b0 \cf0 , 
+\f1\b \cf4 17
+\f0\b0 \cf0 , 
+\f1\b \cf4 21
+\f0\b0 \cf0 , 
+\f1\b \cf4 24
+\f0\b0 \cf0 , 
+\f1\b \cf4 31
+\f0\b0 \cf0 , 
+\f1\b \cf4 26
+\f0\b0 \cf0 , 
+\f1\b \cf4 28
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 , 
+\f1\b \cf4 27
+\f0\b0 \cf0 , 
+\f1\b \cf4 19
+\f0\b0 \cf0 , 
+\f1\b \cf4 25
+\f0\b0 \cf0 , 
+\f1\b \cf4 31
+\f0\b0 \cf0 , 
+\f1\b \cf4 24
+\f0\b0 \cf0 , 
+\f1\b \cf4 28
+\f0\b0 \cf0 , 
+\f1\b \cf4 24
+\f0\b0 \cf0 , 
+\f1\b \cf4 29
+\f0\b0 \cf0 , 
+\f1\b \cf4 21
+\f0\b0 \cf0 , 
+\f1\b \cf4 21
+\f0\b0 \cf0 , 
+\f1\b \cf4 18
+\f0\b0 \cf0 , 
+\f1\b \cf4 27
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 \};\
+G2 = \{
+\f1\b \cf4 21
+\f0\b0 \cf0 , 
+\f1\b \cf4 19
+\f0\b0 \cf0 , 
+\f1\b \cf4 13
+\f0\b0 \cf0 , 
+\f1\b \cf4 22
+\f0\b0 \cf0 , 
+\f1\b \cf4 15
+\f0\b0 \cf0 , 
+\f1\b \cf4 22
+\f0\b0 \cf0 , 
+\f1\b \cf4 15
+\f0\b0 \cf0 , 
+\f1\b \cf4 22
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 , 
+\f1\b \cf4 12
+\f0\b0 \cf0 , 
+\f1\b \cf4 24
+\f0\b0 \cf0 , 
+\f1\b \cf4 24
+\f0\b0 \cf0 , 
+\f1\b \cf4 21
+\f0\b0 \cf0 , 
+\f1\b \cf4 19
+\f0\b0 \cf0 , 
+\f1\b \cf4 18
+\f0\b0 \cf0 , 
+\f1\b \cf4 16
+\f0\b0 \cf0 , 
+\f1\b \cf4 23
+\f0\b0 \cf0 , 
+\f1\b \cf4 20
+\f0\b0 \cf0 \};\
+obsdiff = mean(G1) - mean(G2);\
+\cf5 print\cf0  obsdiff;\
+\cf5 call\cf0  randseed(
+\f1\b \cf4 12345
+\f0\b0 \cf0 );                             \cf2 /* set random number seed */\cf0 \
+alldata = G1 // G2;                        \cf2 /* stack data in a single vector */\cf0 \
+N1 = nrow(G1);  N = N1 + nrow(G2);\
+NRepl = 
+\f1\b \cf4 9999
+\f0\b0 \cf0 ;                                     \cf2 /* number of permutations */\cf0 \
+nulldist = j(NRepl,
+\f1\b \cf4 1
+\f0\b0 \cf0 );                   \cf2 /* allocate vector to hold results */\cf0 \
+\
+x = sample(alldata, N//NRepl, \cf6 "WOR"\cf0 );               \cf2 /* create all resamples */\cf0 \
+nulldist = x[,
+\f1\b \cf4 1
+\f0\b0 \cf0 :N1][,:] - x[,(N1+
+\f1\b \cf4 1
+\f0\b0 \cf0 ):N][,:]; \cf2 /* compute all mean differences */\cf0 \
+ \
+\cf5 title\cf0  \cf6 "Histogram of Null Distribution"\cf0 ;\
+refline = \cf6 "refline "\cf0  + char(obsdiff) + \cf6 " / axis=x lineattrs=(color=red);"\cf0 ;\
+\cf5 call\cf0  Histogram(nulldist) other=refline;\
+
+\f1\b \cf3 run
+\f0\b0 \cf0 ;\
+\
+\
+\cf2 /* Exam Prep SAS code */\cf0  \
+\
+
+\f1\b \cf3 proc
+\f0\b0 \cf0  
+\f1\b \cf3 iml
+\f0\b0 \cf0 ;\
+G1 = \{
+\f1\b \cf4 37
+\f0\b0 \cf0 ,
+\f1\b \cf4 49
+\f0\b0 \cf0 ,
+\f1\b \cf4 55
+\f0\b0 \cf0 ,
+\f1\b \cf4 77
+\f0\b0 \cf0 \};\
+G2 = \{
+\f1\b \cf4 23
+\f0\b0 \cf0 ,
+\f1\b \cf4 31
+\f0\b0 \cf0 ,
+\f1\b \cf4 46
+\f0\b0 \cf0 \};\
+obsdiff = mean(G1) - mean(G2);\
+\cf5 print\cf0  obsdiff;\
+\cf5 call\cf0  randseed(
+\f1\b \cf4 12345
+\f0\b0 \cf0 );                             \cf2 /* set random number seed */\cf0 \
+alldata = G1 // G2;                        \cf2 /* stack data in a single vector */\cf0 \
+N1 = nrow(G1);  N = N1 + nrow(G2);\
+NRepl = 
+\f1\b \cf4 9999
+\f0\b0 \cf0 ;                                     \cf2 /* number of permutations */\cf0 \
+nulldist = j(NRepl,
+\f1\b \cf4 1
+\f0\b0 \cf0 );                   \cf2 /* allocate vector to hold results */\cf0 \
+\
+x = sample(alldata, N//NRepl, \cf6 "WOR"\cf0 );               \cf2 /* create all resamples */\cf0 \
+nulldist = x[,
+\f1\b \cf4 1
+\f0\b0 \cf0 :N1][,:] - x[,(N1+
+\f1\b \cf4 1
+\f0\b0 \cf0 ):N][,:]; \cf2 /* compute all mean differences */\cf0 \
+ \
+\cf5 title\cf0  \cf6 "Histogram of Null Distribution"\cf0 ;\
+refline = \cf6 "refline "\cf0  + char(obsdiff) + \cf6 " / axis=x lineattrs=(color=red);"\cf0 ;\
+\cf5 call\cf0  Histogram(nulldist) other=refline;\
+
+\f1\b \cf3 run
+\f0\b0 \cf0 ;\
+}
