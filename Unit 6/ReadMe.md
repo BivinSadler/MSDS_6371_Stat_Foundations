@@ -1,4 +1,4 @@
-# Unit 6: How to Adjust When we are making Mulitple Comparisons!
+# Unit 6: Analysis of Variance (ANOVA!)
 
-Stay tuned for the For Live Session Assignment!
+This chapter is all about detecting a difference between 3 or more means or medians!  
 
