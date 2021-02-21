@@ -1,2 +1,2 @@
-# Unit 8! Correlation!  
-Unit 8 Materials are in the folder including the HW!
+# Unit 8! Midterm Week!  
+In this folder you will find several actual midterms from prior semesters as well as several practice problems.  
