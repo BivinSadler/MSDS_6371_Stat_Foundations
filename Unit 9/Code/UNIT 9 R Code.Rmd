@@ -1,0 +1,57 @@
+---
+title: "Unit 9 R Code"
+author: "Bivin Sadler"
+date: "6/26/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Study Time / Exam Score Example
+
+### Correlation
+
+Here we demonstrate the R code for finding the correlation.
+
+```{r}
+StudyTime = data.frame(ExamScore = c(34,56,45,70,55,68,67,79,45,89,95,78,94), StudyHours = c(1,1,2,2,2,3,4,4,4,6,7,7,8))
+StudyTime
+plot(StudyTime$StudyHours,StudyTime$ExamScore, xlab = "Study Hours", ylab = "Exam Score", main = "Study Time Analysis",pch = 15)
+cor(StudyTime)
+```
+
+### T-Test for Correlation
+
+Step 2: Critical Value
+```{r}
+
+qt(c(.025,.975),11)
+
+```
+
+Step 3: Test Statistic
+```{r}
+
+cor.test(StudyTime$StudyHours,StudyTime$ExamScore)
+
+```
+
+#Regression
+
+###T-Test for Regression
+
+```{r}
+fit = lm(ExamScore~StudyHours, data= StudyTime)
+summary(fit)
+```
+
+### Plot 
+```{r}
+plot(StudyTime$StudyHours,StudyTime$ExamScore, xlab = "Study Hours", ylab = "Exam Score", main = "Study Time Analysis",pch = 15)
+lines(StudyTime$StudyHours, fit$fitted.values)
+```
+
+
+
