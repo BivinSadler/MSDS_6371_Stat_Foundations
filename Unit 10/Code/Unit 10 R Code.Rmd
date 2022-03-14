@@ -1,0 +1,81 @@
+---
+title: "Unit 10 R  Code"
+author: "Bivin Sadler"
+date: "7/13/2020"
+output: html_document
+---
+
+```{r}
+# Assumptions 
+library(GGally)
+
+df= read.csv(file.choose(), header = TRUE)
+ggpairs(df)
+
+fit = lm(Quadratic~X, data = df)
+plot(fit)
+
+fit = lm(IncVar~X, data = df)
+plot(fit)
+
+fit = lm(OK~X, data = df)
+plot(fit)
+
+tuna = read.csv(file.choose(), header = TRUE)
+head(tuna)
+fit = lm(Length ~ Age, data = tuna)
+plot(tuna)
+plot(fit)
+
+StudyTime = data.frame(ExamScore = c(34,56,45,70,55,68,67,79,45,89,95,78,94), StudyHours = c(1,1,2,2,2,3,4,4,4,6,7,7,8))
+StudyTime
+fit = lm(ExamScore~StudyHours, data= StudyTime)
+plot(fit)
+
+
+# anova for regression
+anovaData = data.frame(score = c(3,5,7,10,12,14,20,22,24), level = c(1,1,1,2,2,2,3,3,3))
+anovaData
+fit = lm(score~level, data = anovaData)
+anova(fit)
+summary(fit)
+
+
+# anova for study time
+
+StudyTime = data.frame(ExamScore = c(34,56,45,70,55,68,67,79,45,89,95,78,94), StudyHours = c(1,1,2,2,2,3,4,4,4,6,7,7,8))
+StudyTime
+fit = lm(ExamScore~StudyHours, data= StudyTime)
+anova(fit)
+
+
+## Confidence Interval for the Mean: Study Hours Example
+
+StudyTime = data.frame(ExamScore = c(34,56,45,70,55,68,67,79,45,89,95,78,94), StudyHours = c(1,1,2,2,2,3,4,4,4,6,7,7,8))
+StudyTime
+
+### Confidence Interval for the Mean Grade
+fit = lm(ExamScore~StudyHours, data= StudyTime)
+summary(fit)
+
+predict(fit,interval = "confidence", level = 0.95)
+
+newpoint = data.frame(ExamScore = NA, StudyHours = 5)
+predict(fit,newdata = newpoint,interval = "confidence")
+
+### Prediction Interval for and Individual's Grade
+fit = lm(ExamScore~StudyHours, data= StudyTime)
+summary(fit)
+
+predict(fit,interval = "prediction", level = 0.95)
+
+newpoint = data.frame(ExamScore = NA, StudyHours = 5)
+predict(fit,newdata = newpoint,interval = "prediction")
+
+### Calibration Interval for a Mean Grade
+calibrate(fit,y0 = 75, interval = "inversion", mean.response = TRUE, limit = FALSE)
+
+### Calibration Interval for an Individual's Grade
+calibrate(fit,y0 = 75, interval = "inversion", mean.response = FALSE, limit = FALSE)
+
+```
