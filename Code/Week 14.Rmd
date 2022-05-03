@@ -1,0 +1,102 @@
+---
+title: "Stat 1 R Code - Week 14"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+```{r include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(pwr)
+library(agricolae)
+library(huxtable)
+library(lawstat)
+library(lsmeans)
+library(nCDunnett)
+library(dplyr)
+library(WDI)
+library(investr)
+library(multcomp)
+library(pairwiseCI)
+library(DescTools)
+library(GGally)
+```
+
+```{r}
+library(olsrr)
+```
+
+
+```{r}
+Database <- data.frame(read_csv("D:/SMU/Ph.D./Data Science/Statistical Foundation for Data Science/Assignment/Unit 14/sat.csv"))
+```
+
+```{r}
+head(Database)
+```
+```{r}
+Database$State <- factor(Database$State)
+str(Database)
+```
+
+
+```{r}
+plot(Database[,1:8], col = "blue")
+```
+```{r}
+fit = lm(SAT ~ .-State, data = Database)
+summary(fit)
+
+# Backward
+ols_step_backward_p(fit, prem = 0.05, details = TRUE)
+
+# Forward
+ols_step_forward_p(fit, penter = 0.05, details = TRUE)
+
+# Stepwise
+ols_step_both_p(fit, prem = 0.05, pent = 0.05, details = FALSE)
+```
+
+
+/* Variable Selection with Sig Level */
+```{r}
+bodyfat <- read.csv("bodyfat.csv", header = TRUE)
+head(bodyfat)
+bodyfat2 = bodyfat[-c(39,42),]
+bodyfat3 = bodyfat2 %>% dplyr::select(-c(Density,Weight))
+head(bodyfat3)
+fit = lm(Fat~., data = bodyfat3)
+a = ols_step_forward_p(fit,details = TRUE)
+```
+
+
+/* Variable Selection with AIC */
+```{r}
+bodyfat <- read.csv("bodyfat.csv", header = TRUE)
+head(bodyfat)
+bodyfat2 = bodyfat[-c(39,42),]
+bodyfat3 = bodyfat2 %>% dplyr::select(-c(Density,Weight))
+head(bodyfat3)
+fit = lm(Fat~., data = bodyfat3)
+a = ols_step_forward_aic(fit,details = TRUE)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+

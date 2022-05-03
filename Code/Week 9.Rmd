@@ -1,0 +1,122 @@
+---
+title: "Stat 1 R Code - Week 9"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+```{r include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(pwr)
+library(agricolae)
+library(huxtable)
+library(lawstat)
+library(lsmeans)
+library(nCDunnett)
+library(dplyr)
+library(investr)
+library(multcomp)
+library(pairwiseCI)
+library(DescTools)
+```
+
+```{r}
+studytime = data.frame(ExamScore = c(34,56,45,70,55,68,67,79,45,89,95,78,94), studyHours = c(1,1,2,2,2,3,4,4,4,6,7,7,8))
+studytime
+cor(studytime)
+cor.test(studytime$studyHours,studytime$ExamScore)
+
+fit = lm(studytime$ExamScore ~studytime$studyHours, data = studytime)
+summary(fit)
+confint(fit)
+```
+
+```{r}
+Crickets <- data.frame(read.csv("D:/SMU/Ph.D./Data Science/Statistical Foundation for Data Science/Assignment/Unit 10/Crickets.csv"))
+```
+
+# Ploting the data - Scatterplot
+```{r}
+plot(Crickets$chirps,Crickets$temp, xlab = "Study Hours", ylab = "ExamScore", main = "Study Time Analysis", pch = 15)
+```
+
+# FLS
+```{r}
+fit = lm(temp ~ chirps, data = Crickets)
+summary(fit)
+# 2
+anova(fit)
+# 3
+confint(fit, level=0.95)
+# 4
+calibrate(fit, y0 = 1188, interval = 'Wald', mean.response = TRUE, limit = FALSE)
+
+
+new.dat <- data.frame(temp = NA, chirps=1188)
+
+predict(fit, newdata = new.dat, interval = 'confidence', level = 0.95)
+predict(fit, newdata = new.dat, interval = 'prediction', level = 0.95)
+predict(fit, interval = 'confidence', level = 0.95)
+```
+
+```{r}
+newdata = data.frame(temp = NA, chirps = 1188)
+predict(fit, newdata = newdata, interval = 'confidence')
+
+```
+
+Calculating t statistics for Pearson'r
+
+```{r}
+cor.test(studytime$studyHours,studytime$ExamScore)
+```
+
+
+
+# HW9
+
+```{r}
+model = lm(Wins ~ Payroll, data = nba)
+
+#summary(fit)
+new.dat <- data.frame(Payroll=100)
+paste("95% confidence interval for the expected number of wins for a team with $100 million payroll")
+predict(model, newdata = new.dat, interval = 'confidence', level = 0.95)
+paste("95% prediction interval for the number of wins for a team with $100 million payroll")
+predict(model, newdata = new.dat, interval = 'prediction', level = 0.95)
+```
+
+```{r}
+data("cars")
+cars.lm <- lm(dist ~ speed, data = cars)
+new.dat <- data.frame(speed=30)
+predict(cars.lm, newdata = new.dat, interval = 'confidence', level = 0.95)
+predict(cars.lm, newdata = new.dat, interval = 'prediction', level = 0.95)
+```
+
+```{r}
+confint(fit)
+```
+
+Regression model
+```{r}
+fit = lm(test$math ~ test$science, data = test)
+confint(fit, level=0.99)
+summary(fit)
+```
+
+
+```{r}
+fls = data.frame(swimsuits = c(5,10,15,17,20,30,37,38,45,55), temperature = c(64,62,68,70,71,80,82,85,87,92)  )
+fit1 = lm(fls$swimsuits ~ fls$temperature, data = fls)
+summary(fit1)
+```
+
+

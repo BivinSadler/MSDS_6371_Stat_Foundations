@@ -1,0 +1,149 @@
+---
+title: "Stat 1 R Code - Week 6"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+```{r include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(pwr)
+library(agricolae)
+library(huxtable)
+library(lawstat)
+library(lsmeans)
+library(nCDunnett)
+library(dplyr)
+library(multcomp)
+library(pairwiseCI)
+library(DescTools)
+```
+
+
+```{r}
+height = data.frame( x= c(70,69,71,69,68,70,70,71,   80,79,81,82,78,   70,71,72,73,72,73,   70,71,72,71,73,71,72,73,74,  69,72,71), group = factor(c("Soccer","Soccer","Soccer","Soccer","Soccer","Soccer","Soccer","Soccer","Basketball","Basketball","Basketball","Basketball","Basketball","Football","Football","Football","Football","Football","Football", "Swimming","Swimming","Swimming","Swimming","Swimming","Swimming","Swimming","Swimming","Swimming", "Tennis","Tennis","Tennis")))
+
+fit = aov(x~group, data = height)
+summary(fit)
+
+fit = lm(x~group, data = height)
+anova(fit)
+```
+
+# Leven Brown test
+
+```{r}
+levene.test(height$x,height$group)
+```
+# Kruskal Test
+```{r}
+kruskal.test(x~group, data = height)
+```
+
+
+
+```{r include = FALSE}
+Database <- read_csv("D:/SMU/Ph.D/Data Science/Statistical Foundation for Data Science/Assignment/Unit 6/incomedata.csv") 
+Database$logtrans <- log(Database$Income2005)
+Database$Educ <- factor(Database$Educ)
+```
+
+# ANOVA Test
+```{r}
+fit = lm(logtrans~Educ, data = Database)
+anova(fit)
+
+edu.anova <- aov(logtrans~Educ, data = Database)
+summary(edu.anova)
+```
+
+
+# ANOVA Welch and Kruskal-Wallis
+```{r}
+oneway.test(Income2005 ~ Educ, data=edu, var.equal=F)
+
+kruskal.test(Income2005 ~ Educ, data=edu)
+```
+
+```{r}
+##Here is how to answer the problem using R
+##Combine the 16 and >16 groups
+edu$group.reduced <- ifelse(edu$Educ %in% c('>16', '16'), '16 plus',
+edu$Educ)
+
+##Full Model
+edu.anova <- aov(log.income ~ Educ, data=edu)
+summary(edu.anova)
+
+
+##Full Model
+edu.anova <- aov(log.income ~ Educ, data=edu)
+summary(edu.anova)
+
+##               Df Sum Sq Mean Sq F value Pr(>F)    
+## Educ           4  217.7   54.41   62.87 <2e-16 ***
+## Residuals   2579 2232.1    0.87                   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+##Reduced Model
+
+edu.anova2 <- aov(log.income ~ group.reduced, data=edu)
+summary(edu.anova2)
+##                 Df Sum Sq Mean Sq F value Pr(>F)    
+## group.reduced    3  215.7   71.89   83.02 <2e-16 ***
+## Residuals     2580 2234.1    0.87                   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+##Determine the critical value
+qf(0.95, 3, 36)
+## [1] 3.845067
+##Determine the p-value
+pf(5, 3, 36, lower.tail=F)
+
+```
+
+
+```{r}
+median(Database$Income2005[Database$Educ == ">16"])
+median(Database$Income2005[Database$Educ == "16"])
+median(Database$Income2005[Database$Educ == "13-15"])
+median(Database$Income2005[Database$Educ == "12"])
+median(Database$Income2005[Database$Educ == "<12"])
+```
+
+
+```{r}
+Database %>% ggplot(aes(y = logtrans, color = Educ)) + 
+	geom_boxplot() + 
+	ggtitle("Comparing the Distributions - Log Transformed Data")+ ylab("Income")
+```
+
+```{r}
+Database %>% ggplot(aes(x = ,y = logtrans, color = Educ)) + 
+	geom_boxplot() + 
+	ggtitle("Comparing the Distributions - Log Transformed Data")+ ylab("Income")
+```
+
+
+```{r}
+Database %>%
+	ggplot(aes(y = Database$logtrans, color = Educ)) + 	geom_histogram() + 
+	facet_wrap(~Educ) + 	ggtitle("Comparing the Histograms - Log Transformed Data") + xlab("Count") + ylab("Income")
+```
+
+```{r}
+Database %>%
+    ggplot(aes(sample = logtrans, color = Educ)) + 	geom_qq() + 
+	geom_qq_line() + 	ggtitle("Comparing the Q-Q Plots - Log Transformed Data") + xlab("Theoretical") + ylab("Sample") +
+	facet_wrap(~Educ)
+
+```
+
+

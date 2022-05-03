@@ -1,0 +1,108 @@
+---
+title: "Stat 1 R Code - Week 3"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+# Packages
+```{r include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+```
+
+
+```{r}
+EducInc <- data.frame(read.csv("D:/SMU/Ph.D/Data Science/Statistical Foundation for Data Science/Assignment/Unit 3/Education.csv"))
+```
+
+# F test
+```{r}
+var.test(EducInc$logincome~EducInc$Educ, EducInc,alternative = "two.sided")
+```
+
+
+
+# Paired ttest
+
+```{r}
+Database$dif = Database$Ritalin - Database$Placebo
+hist(Database$dif)
+qq(Database$dif)
+t.test(x = Database$Placebo, y = Database$Ritalin, paired = TRUE, alternative = "less")
+t.test(x = Database$Placebo, y = Database$Ritalin, paired = TRUE, conf.level = 0.9)
+```
+
+
+```{r}
+EducInc$logincome <- log(EducInc$Income2005)
+
+# Two sample t-test
+# var.equal = FALSE means samples with different standard deviation
+# var.equal = TRUE  means samples with equal standard deviation
+t.test(EducInc$logincome~EducInc$Educ, var.equal =FALSE, alternative = "two.sided") # two-sided
+t.test(EducInc$logincome~EducInc$Educ, var.equal =TRUE, alternative = "less") # one-sided
+t.test(EducInc$logincome~EducInc$Educ, var.equal =TRUE, alternative = "greater") # one-sided
+t.test(EducInc$logincome~EducInc$Educ, var.equal =TRUE, alternative = "two.sided", conf.level = 0.90) # changing confidence interval
+```
+
+
+# Checking the assumptions
+
+```{r}
+fired <- c(34, 37, 37, 38, 41, 42, 43, 44, 44, 45, 45, 45, 46, 48, 49, 53, 53, 54, 54, 55, 56)
+not.fired <- c(27, 33, 36, 37, 38, 38, 39, 42, 42, 43, 43, 44, 44, 44, 45, 45, 45, 45, 46, 46, 47, 47, 48, 48, 49, 49, 51, 51, 52, 54)
+label1 <- rep('fired', 21)
+label2 <- rep('not.fired', 30)
+label.all <- as.factor(c(label1, label2))
+samoa <- data.frame(status=label.all, age=c(fired, not.fired))
+
+par(mfrow=c(2,2))
+hist(fired, xlab='Age of Fired Employees', main='Fired Group')
+box()
+hist(not.fired, xlab='Age of Non-Fired Employees', main='Not Fired Group')
+box()
+qqnorm(fired)
+qqnorm(not.fired)
+
+```
+
+
+```{r}
+EducInc$FEduc <- factor(EducInc$Educ)
+EducInc %>% ggplot(aes(x = Income2005, after_stat(density),   
+  color = FEduc, fill = FEduc)) + geom_freqpoly() + 
+ggtitle("Density Plot of ..")
+
+# Log transformation
+
+EducInc$lIncome = log(EducInc$Income2005)
+EducInc %>% filter(Educ == 12 | Educ == 16) %>% 
+ggplot(aes(x = lIncome, after_stat(density), color = FEduc, fill = FEduc)) +
+geom_freqpoly() + 
+ggtitle("Density Plot of Income Distribution between 12 and 16 Years of Education")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,143 @@
+---
+title: "Stat 1 R Code - Week 7"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+```{r include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(pwr)
+library(agricolae)
+library(huxtable)
+library(lawstat)
+library(lsmeans)
+library(nCDunnett)
+library(dplyr)
+library(multcomp)
+library(pairwiseCI)
+library(DescTools)
+```
+
+```{r}
+Dunnett.t.Statistic(0.05,2,107)
+# Tukey studentized range statistic
+qtukey(0.05, 3, 107, nranges = 1, lower.tail = FALSE, log.p = FALSE)
+```
+
+# Contrast
+
+```{r}
+unique(Database$Handicap)
+fit = lm(Score~ Handicap, data = Database)
+leastsqure = lsmeans(fit, "Handicap")
+Contrasts = list(AmpHearingVersusCrutchesWheelchair = c(.5, -.5, .5, 0, -.5))
+
+contrast(leastsqure, Contrasts, adjust = "sidak")
+contrast(leastsqure, Contrasts)
+```
+
+# Multiple Comparison with adjustments
+```{r}
+aovHandi <- aov(Score ~ Handicap, data = Database)
+
+handi.bonf <- LSD.test(aovHandi, 'Handicap', p.adj='bonferroni')
+handi.lsd <- LSD.test(aovHandi, 'Handicap', p.adj='none')
+handi.scheffe <- scheffe.test(aovHandi, 'Handicap')
+handi.tukey <- HSD.test(aovHandi, 'Handicap')
+
+handi.bonf$statistics[6]
+##       MSD
+##   1.79357
+handi.tukey$statistics[5]
+##        MSD
+##   1.731733
+handi.lsd$statistics[6]
+##        LSD
+##   1.232618
+handi.scheffe$statistics[7]
+##   CriticalDifference
+##             1.956817
+
+```
+
+
+
+```{r}
+Database <- data.frame(read_csv("D:/SMU/Ph.D./Data Science/Statistical Foundation for Data Science/Assignment/Unit 7/handicap.csv"))
+Database$Handicap <- factor(Database$Handicap)
+fit = lm(Score~ Handicap, data = Database)
+gfit = glht(fit, linfct = mcp(Handicap = "Tukey"))
+summary(gfit, test = adjusted(type = "none"))
+confint(gfit)
+```
+
+```{r}
+library(onewaytests)
+bf.test(Score~ Handicap, data = Database)
+```
+
+
+# Tukey
+
+```{r}
+fit = lm(Score~ Handicap, data = Database)
+gfit = glht(fit, linfct = mcp(Handicap = "Tukey"))
+summary(gfit)
+
+confint(gfit)
+#pairwiseCI(Score~ Handicap, data = Database)
+```
+# LSD
+
+```{r}
+fit = lm(Score~ Handicap, data = Database)
+gfit = glht(fit, linfct = mcp(Handicap = "Tukey"))
+summary(gfit, test = adjusted(type = "none"))
+
+confint(gfit)
+#pairwiseCI(Score~ Handicap, data = Database)
+```
+# bonferroni
+```{r}
+fit = lm(Score~ Handicap, data = Database)
+gfit = glht(fit, linfct = mcp(Handicap = "Tukey"))
+summary(gfit, test = adjusted(type = "bonferroni"))
+
+confint(gfit)
+```
+
+# Dunnett
+```{r}
+fit = lm(Score~ Handicap, data = Database)
+gfit = glht(fit, linfct = mcp(Handicap = "Dunnett"))
+summary(gfit)
+
+confint(gfit)
+```
+
+
+# Scheffe
+
+```{r}
+fm1 <- aov(Score~ Handicap, data = Database)
+
+#ScheffeTest(x=fm1)
+ScheffeTest(x=fm1, which="Handicap")
+```
+
+# Bonferroni
+
+```{r}
+bonferroni_ex <- p.adjust(.05, method = "bonferroni", n = 70) 
+
+pairwiseCI(Score~ Handicap, data = Database)
+pairwise.t.test(Database$Score,Database$Handicap, p.adjust = "bonferroni")
+```

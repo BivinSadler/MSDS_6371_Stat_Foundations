@@ -1,0 +1,156 @@
+---
+title: "Stat 1 R Code - Week 11"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+```{r include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(pwr)
+library(agricolae)
+library(huxtable)
+library(lawstat)
+library(lsmeans)
+library(nCDunnett)
+library(dplyr)
+library(WDI)
+library(investr)
+library(multcomp)
+library(pairwiseCI)
+library(DescTools)
+```
+
+```{r}
+WDIsearch("infant")
+WDIsearch("GDP")
+InfantMort = WDI(,"SP.DYN.IMRT.IN",start = 2019, end = 2019)
+GDPs = WDI(,"NY.GDP.PCAP.CD",start = 2019, end = 2019)
+InfantVGDP = inner_join(GDPs,InfantMort,"country")
+InfantVGDP = InfantVGDP[,c(1,2,3,4,6)]
+colnames(InfantVGDP) = c("iso2C","country","GDP","year","InfantMort")
+InfantVGDP
+
+InfantVGDP <- na.omit(InfantVGDP)
+```
+
+```{r}
+filter(InfantVGDP, country == "United States")
+```
+```{r}
+str(InfantVGDP)
+```
+
+
+```{r}
+InfantVGDP %>% ggplot(aes(x = GDP, y = InfantMort)) + geom_point() + ggtitle("Infant Mortality versus GDP")
+
+InfantVGDP %>% ggplot(aes(x = log(GDP), y = InfantMort)) +  geom_point() + ggtitle("Infant Mortality versus log(GDP")
+
+InfantVGDP %>% 
+	ggplot(aes(x = GDP, y = log(InfantMort))) + 
+		geom_point() + 
+		ggtitle("log(Infant Mortality) versus GDP")
+
+
+InfantVGDP %>% 
+	ggplot(aes(x = log(GDP), y = log(InfantMort))) + 
+		geom_point() + 
+		ggtitle("log(Infant Mortality) versus log(GDP")
+
+cor.test(log(InfantVGDP$InfantMort),log(InfantVGDP$GDP))
+
+
+fit = lm(log(InfantMort)~log(GDP), data = InfantVGDP)
+summary(fit)
+
+plot(fit)
+
+
+fit = lm(log(InfantMort)~log(GDP), data = InfantVGDP)
+newdata = data.frame(GDP = 65297.52)
+pred = predict(fit,newdata = newdata, interval = "prediction")
+pred
+
+```
+
+
+
+# Example
+
+```{r}
+Data = data.frame( Prevalence = c(3.5,5.3,7.8,11.8,18.3),  Year = c(1992,1994,1996,1998,2000))
+fit = lm(log(Prevalence) ~ Year, data = Data)
+#anova(fit)
+summary(fit)
+```
+
+```{r}
+confint(fit)
+```
+
+
+```{r}
+movies= data.frame( Prevalence = c(3.5,5.3,7.8,11.8,18.3),  Year = c(1992,1994,1996,1998,2000))
+movies.lm=lm((Prevalence)~Year, data = movies)
+newx=movies$Year
+newx=sort(newx)
+prd_c=predict(movies.lm, newdata= data.frame(Year = newx), interval=c("confidence"), type = c("response"), level=0.95) 
+prd_p=predict(movies.lm, newdata= data.frame(Year = newx), interval=c("prediction"), type = c("response"), level=0.95) 
+#Plot with confidence and prediction intervals
+plot(movies[,2],log(movies[,1]),xlim = c(1990, 2002), ylim = c(0,4),xlab = "Year",ylab = "Prevalence", main = "Autism Prevalence")
+abline(movies.lm, col = "red")
+lines(newx,prd_c[,2],col = "blue",lty = 2, lwd = 2)
+lines(newx,prd_c[,3],col = "blue", lty = 2, lwd = 2)
+lines(newx,prd_p[,2],col = "green", lty = 2, lwd = 2)
+lines(newx,prd_p[,3],col = "green", lty = 2, lwd = 2)
+```
+
+
+```{r}
+library(MASS)
+
+#calculate studentized residuals
+stud_resids <- studres(movies.lm)
+
+#view first three studentized residuals
+head(stud_resids, 3)
+
+#plot predictor variable vs. studentized residuals
+plot(movies$Year, stud_resids,  ylab='Studentized Residuals', xlab='Displacement') 
+
+#add horizontal line at 0
+abline(0, 0)
+
+```
+# Residual Plots
+```{r}
+plot(movies.lm)
+```
+
+
+# Residual
+```{r}
+plot(movies.lm$residuals, main="Residual Versus Year",
+   xlab="Predicted Values", ylab="Residuals", pch=19)
+abline(h = 0, col = "red")
+```
+
+# Residual Histogram with Normal Distribution
+```{r}
+g = movies.lm$residuals
+m<-mean(g)
+std<-sqrt(var(g))
+hist(g, density=10, breaks=10, prob=TRUE, col="red",
+     xlab="Residuals", ylim=c(0, 0.5), 
+     main="Residual Histogram with Normal Distribution")
+curve(dnorm(x, mean=m, sd=std), 
+      col="darkblue", lwd=2, add=TRUE, yaxt="n")
+```
