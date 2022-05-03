@@ -1,0 +1,202 @@
+---
+title: "Stat 1 R Code - Week 1 & 2"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+# Package
+```{r include = FALSE}
+library(tidyverse)
+library(dplyr)
+library(emmeans)
+```
+
+# F Critical Value
+```{r}
+qf(0.05,1,196, lower.tail = FALSE) # Note: For Ftest, alpha is always  the exact amount not divided by 2
+```
+
+# t Critical Value Calculation
+```{r}
+qt((1-0.05/2),196) # t value - We only need to put the alpha value that exists in one side of the distribution.
+```
+
+# P-value Calculation
+# the 1.46 is the test statistics calculated and 119 is the degree of freedom
+```{r}
+pt(1.46, 119, lower.tail = FALSE) # p value one-sided
+pt(1.46, 119, lower.tail = FALSE)*2 # p value two-sided
+```
+
+
+# One and two sample ttest - one or two sided
+
+```{r}
+data <- c(25, 19, 37, 29, 40, 28, 31)
+# One sample t.test - two.sided or one.sided
+t.test(data, alternative = "two.sided")
+
+# One sample t.test with null hypothesis- two.sided or one.sided
+t.test(data, mu =30, alternative = "two.sided")
+
+
+Database <- data.frame(read.csv("D:/SMU/Ph.D/Data Science/Statistical Foundation for Data Science/Assignment/Unit 2/Creativity.csv"))
+
+# Two sample t.test- two.sided or one.sided
+t.test(Score ~ Treatment, data = Database, conf.level = 0.99, var.equal = TRUE, alternative = "two.sided", ) # alternative can be, greater, less, and two.sided,
+
+t.test(Database$Score[Database$Treatment == 1], Database$Score[Database$Treatment == 0], data = Database, conf.level = 0.99, var.equal = FALSE, alternative = "two.sided")
+```
+# Q-Q Plot
+```{r}
+qqnorm(Database$Score[Database$Treatment == 1],main = "Normal Q-Q Plot of Not Fired People")
+```
+
+# Histograms of Independent Variables
+
+```{r}
+hist(Database$Score[Database$Treatment == 1])
+hist(Database$Score[Database$Treatment == 0])
+```
+
+### Two sample hyphthesis test and simulation
+
+```{r}
+n1 = 50 # sample size per sample for 1st distribution
+n2 = 50 # sample size per sample for 2nd distribution (we will compare these distribuions) 
+simulations = 1000 #number of samples and thus number of xbars we will generate.  
+#mu = 0; # mean parameter for use with normal distribuions
+#sigma = 1; # standard deviation parameter for use with normal distribuions
+population1  = rnorm(10000000,10,1)
+hist(population1, col = "blue", main = "Histogram of the Population 1")
+mean(population1)
+sd(population1)
+population2 = rnorm(10000000,10,1)
+hist(population2, col = "red", main = "Histogram of the Population 2")
+mean(population2)
+sd(population2)
+```
+
+```{r}
+## Data Holder
+xbar_holder1 = numeric(simulations) # This will hold all the sample means for the first distribution.
+xbar_holder2 = numeric(simulations) # This will hold all the sample means for the second distribution.
+DiffOfxbars = numeric(simulations) # This will hold all the difference of sample means. 
+```
+
+```{r}
+## Simulate and Store
+# Generate 1000 samples each of size 10 and find the mean of each sample.  Then store each mean in the xbar_holder vector.
+
+for (i in 1:simulations)
+{ 
+  #sample1 = rnorm(n1,mean = mu, sd = sigma)
+  #sample2 = rnorm(n2,mean = mu, sd = sigma)
+  sample1 = sample(population1, n1)
+  sample2 = sample(population2, n2)
+  
+  xbar1 = mean(sample1)
+  xbar2 = mean(sample2)
+  xbar_holder1[i] = xbar1
+  xbar_holder2[i] = xbar2
+  DiffOfxbars[i] = xbar1 - xbar2
+}
+```
+
+```{r}
+## display the distribution of sample means (plot a histogram of the sample means)
+par(mfrow = c(3,1))
+hist(xbar_holder1, col = "blue", main = paste("Distribution of the sample mean: n = ", n1), xlab = "Dist 1 Sample Means")
+hist(xbar_holder2, col = "red", main = paste("Distribution of the sample mean: n = ", n2), xlab = "Dist 2 Sample Means")
+hist(DiffOfxbars, col = "green", main = "Distribution of the difference of sample means", xlab = "Difference of sample means")
+```
+
+```{r}
+## summary statistics of the distribution of the simulated sample means. 
+summary(xbar_holder1) #5 number summary and the mean
+summary(xbar_holder2) #5 number summary and the mean
+sd(xbar_holder1) # standard deviation of dstribuion 1
+sd(xbar_holder2) #standard deviation of distribuion 2
+mean(DiffOfxbars)
+sd(DiffOfxbars)
+```
+
+
+
+
+
+```{r}
+x <- Database$Score[Database$Treatment == 1]
+h <- hist(x,col = "red", xlab = "Age of People Who Got Fired", main = "Histogram with Normal Curve")
+xfit<-seq(min(x),max(x),length=40)
+yfit<-dnorm(xfit,mean=mean(x),sd=sd(x))
+yfit <- yfit*diff(h$mids[1:2])*length(x)
+lines(xfit, yfit, col="blue", lwd=2)
+qqnorm(x,main = "Normal Q-Q Plot of Fired People")
+
+x <- Database$Score[Database$Treatment == 0]
+h <- hist(x,col = "red", xlab = "Age of People Who Did not get Fired", main = "Histogram with Normal Curve")
+xfit<-seq(min(x),max(x),length=40)
+yfit<-dnorm(xfit,mean=mean(x),sd=sd(x))
+yfit <- yfit*diff(h$mids[1:2])*length(x)
+lines(xfit, yfit, col="blue", lwd=2)
+#h <- hist(Database$Aged[Database$Status == "NotFired"]
+qqnorm(x,main = "Normal Q-Q Plot of Not Fired People")
+```
+
+
+
+# Permutation Test
+
+```{r}
+SMU = c(34, 1200, 23, 50, 60, 50, 0, 0, 30, 89, 0, 300, 400, 20, 10, 0)
+Seattle = c(20, 10, 5, 0, 30, 50, 0, 100, 110, 0, 40, 10, 3, 0)
+school1 <- rep('SMU', 16)
+school2 <- rep('Seattle', 14)
+school <- as.factor(c(school1, school2))
+all.money <- data.frame(name=school, money=c(SMU, Seattle))
+
+t.test(money ~ name, data=all.money)
+## 
+##  Welch Two Sample t-test
+## 
+## data:  money by name
+## t = -1.4945, df = 15.499, p-value = 0.1551
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -277.64481   48.39481
+## sample estimates:
+## mean in group Seattle     mean in group SMU 
+##                27.000               141.625
+number_of_permutations <- 1000
+xbarholder <- numeric(0)
+counter <- 0
+observed_diff <- mean(subset(all.money, name == "SMU")$money)-mean(subset(all.money, name == "Seattle")$money)
+
+# set.seed(5645)
+for(i in 1:number_of_permutations)
+{
+scramble <- sample(all.money$money, 30)
+smu <- scramble[1:16]
+seattle <- scramble[17:30]
+diff <- mean(smu)-mean(seattle)
+xbarholder[i] <- diff
+if(abs(diff) > abs(observed_diff))
+counter <- counter + 1
+}
+hist(xbarholder, xlab='Permuted SMU - Seattle', main='Histogram of Permuted Mean Differences')
+box()
+
+pvalue <- counter/number_of_permutations
+pvalue
+```
+
+
+
+
