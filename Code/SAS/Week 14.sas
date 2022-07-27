@@ -1,4 +1,4 @@
-/* Partil Residuals */
+/* Partial Residuals */
 proc reg data = brain;
 model lbrain = lgest lbody;
 run;
@@ -119,11 +119,11 @@ run;
 
 
 proc glmselect data = bodyfat2;
-model Fat = Age Height Neck Chest Abs Hip Thigh Knee Ankle Bicepts Forearm Wrist / selection = Bacward(stop  = SL SLS = .2) stats = adjrsq;
+model Fat = Age Height Neck Chest Abs Hip Thigh Knee Ankle Bicepts Forearm Wrist / selection = Bacward(stopÂ  = SL SLS = .2) stats = adjrsq;
 run;
 
 proc glmselect data = sat plots = all;
-model SAT = Takers Income Years Public Rank / selection = Stepwise(stop  = SL SLE = .2 SLS = .2) stats = adjrsq;
+model SAT = Takers Income Years Public Rank / selection = Stepwise(stopÂ  = SL SLE = .2 SLS = .2) stats = adjrsq;
 run;
 
 /* Variable Selection with AIC */
