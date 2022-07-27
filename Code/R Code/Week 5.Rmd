@@ -1,0 +1,176 @@
+---
+title: "Stat 1 R Code - Week 5"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+```{r}
+library(tidyverse)
+library(doParallel)
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+```
+
+
+## Input the Data
+
+This code loads and views the data.
+
+```{r}
+# Read in Data
+scoreDF = data.frame(Score = c(37,49,55,77,23,31,46), Treatment = c("New","New","New","New","Traditional","Traditional","Traditional"))
+```
+
+```{r}
+Database <- data.frame(read_csv("D:/SMU/Ph.D/Data Science/Statistical Foundation for Data Science/Assignment/Unit 5/Logging.csv"))
+```
+```{r}
+hist(Database$PercentLost[Database$Action == "L"])
+hist(Database$PercentLost[Database$Action == "U"])
+
+
+qqnorm(Database$PercentLost[Database$Action == "L"], pch = 1, frame = FALSE)
+qqline(Database$PercentLost[Database$Action == "L"], col = "steelblue", lwd = 2)
+
+
+qqnorm(Database$PercentLost[Database$Action == "U"], pch = 1, frame = FALSE)
+qqline(Database$PercentLost[Database$Action == "U"], col = "steelblue", lwd = 2)
+```
+
+
+```{r}
+scrambledLabels = sample(c("New","New","New","New","Traditional","Traditional","Traditional"),7)
+scoreDF$Treatment = scrambledLabels
+
+xbars = scoreDF %>% group_by(Treatment) %>% summarize(mean = mean(Score))
+xbarNminusT = xbars[1,2] - xbars[2,2] # observed difference xbarNew - xbarTraditional = 21.16667
+
+```
+
+
+```{r Oversampled PValue}
+set.seed(2) # So we all get the same randomizations and thus the same values ... comment this out to see how the result changes based on the randomization.
+xbarDiffHolder = numeric(1000)
+for (i in 1:1000)
+{
+  scrambledLabels = sample(c("New","New","New","New","Traditional","Traditional","Traditional"),7)
+  scoreDF$Treatment = scrambledLabels
+  scoreDF
+  xbars = scoreDF %>% group_by(Treatment) %>% summarize(mean = mean(Score))
+  xbarNminusT = xbars[1,2]$mean - xbars[2,2]$mean # observed difference xbarNew - xbarTraditional = 21.16667
+  
+  xbarDiffHolder[i] = xbarNminusT
+}
+ggplot(mapping = aes(x = xbarDiffHolder), color = "blue") + geom_histogram(bins = 25, fill = "blue")
+```
+
+
+```{r}
+num_more_extreme = sum((abs(xbarDiffHolder)) >= 21.16667)
+num_more_extreme
+pvalue = num_more_extreme / 10000
+pvalue
+```
+
+
+
+```{r Exact PValue}
+Students = c(1,2,3,4,5,6,7)
+NewSpots = combn(Students,3)
+NullDistributionGroupings = list()
+DiffOfSampleMeans = numeric(35)
+for (i in 1:35)
+{
+scoreDFTemp = scoreDF
+scoreDFTemp[NewSpots[,i],2]="New"
+scoreDFTemp[-NewSpots[,i],2]="Traditional"
+NullDistributionGroupings[[i]] = scoreDFTemp
+xbars = scoreDFTemp %>% group_by(Treatment) %>% summarize(mean = mean(Score))
+xbarNminusT = xbars[1,2]$mean - xbars[2,2]$mean 
+DiffOfSampleMeans[i] = xbarNminusT
+}
+NullDistributionGroupings
+DiffOfSampleMeans
+pvalue = sum(abs(DiffOfSampleMeans)>=21.1667)/35
+pvalue
+```
+# Permutation Test
+
+```{r}
+# Oring R Code Permuation Test Example
+
+Oring <- read.csv(file.choose(),header = TRUE); # This reads it in if you directory is set to the right folder.
+
+t.test(Oring$Failures ~ Oring$Temp)
+
+number_of_permutations = 10000;
+xbarholder = c();
+counter = 0;
+observed_diff = mean(subset(Oring, Temp == "Warm")$Failures)-mean(subset(Oring, Temp == "Cool")$Failures)
+
+for(i in 1:number_of_permutations)
+{
+  scramble = sample(Oring$Failures,24);
+  Warm = scramble[1:20];
+  Cool = scramble[21:24];
+  diff = mean(Warm)-mean(Cool);
+  xbarholder[i] = diff;
+  if(diff <= observed_diff)
+    counter = counter + 1;
+  
+}
+hist(xbarholder, col = "lightblue", main = "Differences Means Under Ho", xlab = "Diff of Means");
+abline(v = observed_diff,col = "red", lwd = 3);
+pvalue = counter / number_of_permutations;
+pvalue
+```
+
+# Wilcoxon Test
+```{r}
+scoreDF = data.frame(Score = c(37,49,55,77,23,31,46), Treatment = c("New","New","New","New","Traditional","Traditional","Traditional"))
+
+wilcox.test(Score~Treatment, data = scoreDF, alternative = "two.sided")
+
+wilcox.test(Score~Treatment, data = scoreDF, exact = FALSE, alternative = "two.sided")
+```
+
+```{r}
+Database <- data.frame(read_csv("D:/SMU/Data Science/Assignment/Unit 5/Logging.csv"))
+
+wilcox.test(PercentLost ~ Action , data = Database, conf.int = T, alternative = "greater")
+
+# by default R provides the exact p-value rather than the normal apporixmation
+wilcox.test(PercentLost ~ Action , data = Database, conf.int = T, alternative = "greater", exact = FALSE)
+
+# conf.int and conf.level options provide the HL confidence
+wilcox.test(PercentLost ~ Action , data = Database, conf.int = T, alternative = "two.sided", exact = FALSE, conf.level = 0.9)
+```
+
+
+
+
+# Paired tests - Wilcoxon signed-rank test and sign test
+```{r}
+Horse = data.frame(Score = c(14.2,17,37.4,11.2,24.2,35.2,35.2,50.6,39.2,16.4,19,37.6,6.6,14.4,24.4,23.2,38,18.6), Treatment = c("New","New","New","New","New","New","New","New","New","Traditional","Traditional","Traditional","Traditional","Traditional","Traditional","Traditional","Traditional","Traditional"))
+
+wilcox.test(Horse$Score[Horse$Treatment == "New"], Horse$Score[Horse$Treatment == "Traditional"], paired = TRUE)
+```
+
+
+```{r}
+scoreDF = data.frame(Score = c(37,49,55,77,23,31,46), Treatment = c("New","New","New","New","Traditional","Traditional","Traditional"))
+
+scoreDF$Score[scoreDF$Treatment == "New"] - median(scoreDF$Score[scoreDF$Treatment == "New"])
+
+scoreDF$Score[scoreDF$Treatment == "Traditional"] - median(scoreDF$Score[scoreDF$Treatment == "Traditional"])
+```
+
+
+

@@ -1,0 +1,121 @@
+---
+title: "Stat 1 R Code - Week 12"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+```{r include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(pwr)
+library(agricolae)
+library(huxtable)
+library(lawstat)
+library(lsmeans)
+library(nCDunnett)
+library(dplyr)
+library(WDI)
+library(investr)
+library(multcomp)
+library(pairwiseCI)
+library(DescTools)
+```
+
+```{r}
+library(GGally)
+```
+# Crab data
+```{r}
+Database <- read_csv("D:/SMU/Ph.D./Data Science/Statistical Foundation for Data Science/Assignment/Unit 12/Crab.csv")
+```
+```{r}
+Database %>% ggplot(aes(Force, Height, color = Species, shape= Species)) + geom_point() + geom_smooth(method = "lm")+ ggtitle("Craw Closing Force versus Propdus Height")
+
+Database %>% ggplot(aes(Force, Height, color = Species, shape= Species)) + geom_point() + ggtitle("Craw Closing Force versus Propdus Height")
+```
+
+```{r}
+ggpairs(Database[,c(1,2)], mapping=ggplot2::aes(color = Database$Species) )
+```
+```{r}
+Databasescale <- as.data.frame(sapply(Database[,c(1,2)], function(x) (log(x))))
+```
+
+```{r}
+ggpairs(Databasescale[,c(1,2)], mapping=ggplot2::aes(color = Database$Species))
+```
+
+```{r}
+plot(Database[,c(1,2)], col = Database$number)
+```
+
+```{r}
+model <- lm(Force ~ Height*Species, data =Database)
+summary(model)
+plot(model)
+```
+
+# Brain data
+
+```{r}
+Database <- read_csv("D:/SMU/Ph.D./Data Science/Statistical Foundation for Data Science/Assignment/Unit 12/brain.csv")
+```
+
+```{r}
+Databasescale <- as.data.frame(sapply(Database[,c(2,3,4,5)], function(x) (log(x))))
+rd <- lm( Brain ~ Body + Gestation + Litter, data = Databasescale)
+summary(rd)
+```
+```{r}
+plot(rd)
+```
+
+
+# Scatterplot of Residuals
+```{r}
+plot(rd$residuals, main="Scatterplot of Residuals",
+   xlab="Predicted Values", ylab="Residuals", pch=19)
+```
+
+# Residual Histogram with Normal Distribution
+```{r}
+g = rd$residuals
+m<-mean(g)
+std<-sqrt(var(g))
+hist(g, density=20, breaks=20, prob=TRUE, col="red",
+     xlab="Residuals", ylim=c(0, 2), 
+     main="Residual Histogram with Normal Distribution")
+curve(dnorm(x, mean=m, sd=std), 
+      col="darkblue", lwd=2, add=TRUE, yaxt="n")
+```
+# Q-Q plot
+```{r}
+library("car")
+qqPlot(rd$residuals, xlab="Quantile", ylab="Residuals", main="Q-Q Plot of Residuals")
+
+```
+# Studentized Residual Plot
+
+```{r}
+library(MASS)
+
+#calculate studentized residuals
+stud_resids <- studres(rd)
+
+plot(rd$fitted.values, stud_resids,  ylab='Studentized Residuals', xlab='Predicted Values', main="Studentized Residuals Plot") 
+
+#add horizontal line at 0
+abline(0, 0)
+```
+
+
+
+
+

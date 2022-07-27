@@ -1,0 +1,194 @@
+---
+title: "Stat 1 R Code - Week 10"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+```{r include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(pwr)
+library(agricolae)
+library(huxtable)
+library(lawstat)
+library(lsmeans)
+library(nCDunnett)
+library(dplyr)
+library(investr)
+library(multcomp)
+library(pairwiseCI)
+library(DescTools)
+```
+
+
+
+# Example
+
+```{r}
+Data = data.frame( score = c(3,5,7,10,12,14,20,22,24),  level = c(1,1,1,2,2,2,3,3,3))
+fit = lm(score ~level, data = Data)
+anova(fit)
+summary(fit)
+```
+
+# Study Hour Example
+```{r}
+Data1 = data.frame( examscore = c( 34, 56, 145, 270,255, 268, 367, 479, 445, 489, 695, 778, 794), studyhours = c(1,1,2,2,2,3,4,4,4,6,7,7,8) )
+fit = lm(examscore ~studyhours, data = Data1)
+anova(fit)
+summary(fit)
+```
+
+# Confidence Interval
+```{r}
+predict(fit, interval = "confidence", level = 0.95)
+```
+# Confidence interval for the mmean of Y when the X is not in the original dataset
+
+```{r}
+newpoint = data.frame(examscore = NA, studyhours = 5)
+predict(fit, newdata = newpoint, interval = "confidence")
+```
+
+# Prediction Interval
+```{r}
+predict(fit, interval = "prediction", level = 0.95)
+```
+
+
+# Prediction interval for the mmean of Y when the X is not in the original dataset
+
+```{r}
+newpoint = data.frame(examscore = NA, studyhours = 5)
+predict(fit, newdata = newpoint, interval = "prediction")
+```
+
+# Calibrate interval for the mean grade
+```{r}
+calibrate(fit, y0 = 75, interval = "Wald", mean.response = TRUE, limit = FALSE)
+```
+# Calibrate interval for an individual grade
+```{r}
+calibrate(fit, y0 = 75, interval = "Wald", mean.response = FALSE, limit = FALSE)
+```
+
+
+# Visualizing Data before Regression
+```{r}
+#confidence and prediction intervals
+movies = read.csv("D:/SMU/Ph.D./Data Science/Statistical Foundation for Data Science/Assignment/Unit 10/Male Display Data Set.csv")
+movies.lm=lm(Tcell~Mass, data = movies)
+newx=movies$Mass
+newx=sort(newx)
+
+prd_c=predict(movies.lm, newdata= data.frame(Mass = newx), interval=c("confidence"), type = c("response"), level=0.99) 
+prd_p=predict(movies.lm, newdata= data.frame(Mass = newx), interval=c("prediction"), type = c("response"), level=0.99) 
+
+
+#Plot with confidence and prediction intervals
+plot(movies[,1],movies[,2],xlim = c(3,9), ylim = c(-0.1,0.8),xlab = "Mass",ylab = "Tcell", main = "Tcell versus Mass")
+abline(movies.lm, col = "red")
+lines(newx,prd_c[,2],col = "blue",lty = 2, lwd = 2)
+lines(newx,prd_c[,3],col = "blue", lty = 2, lwd = 2)
+lines(newx,prd_p[,2],col = "green", lty = 2, lwd = 2)
+lines(newx,prd_p[,3],col = "green", lty = 2, lwd = 2)
+
+```
+
+# HW 10
+
+```{r}
+movies = read.csv("D:/SMU/Ph.D/Data Science/Assignment/Unit 10/Male Display Data Set.csv")
+movies.lm=lm(Tcell~Mass, data = movies)
+newx=movies$Mass
+newx=sort(newx)
+prd_c=predict(movies.lm, newdata= data.frame(Mass = newx), interval=c("confidence"), type = c("response"), level=0.99) 
+prd_p=predict(movies.lm, newdata= data.frame(Mass = newx), interval=c("prediction"), type = c("response"), level=0.99) 
+#Plot with confidence and prediction intervals
+plot(movies[,1],movies[,2],xlim = c(3,9), ylim = c(-0.1,0.8),xlab = "Mass",ylab = "Tcell", main = "Tcell versus Mass")
+abline(movies.lm, col = "red")
+lines(newx,prd_c[,2],col = "blue",lty = 2, lwd = 2)
+lines(newx,prd_c[,3],col = "blue", lty = 2, lwd = 2)
+lines(newx,prd_p[,2],col = "green", lty = 2, lwd = 2)
+lines(newx,prd_p[,3],col = "green", lty = 2, lwd = 2)
+```
+
+```{r}
+movies.lm=lm(Tcell~Mass, data = movies)
+summary(movies.lm)
+```
+# Confidence interval for the mmean of Y when the X is not in the original dataset
+
+```{r}
+newpoint = data.frame(Tcell = NA, Mass = 4.5)
+predict(movies.lm, newdata = newpoint, interval = "confidence")
+```
+
+# Prediction interval for the mmean of Y when the X is not in the original dataset
+
+```{r}
+newpoint = data.frame(Tcell = NA, Mass = 4.5)
+predict(movies.lm, newdata = newpoint, interval = "prediction")
+```
+
+
+# Visualizing Data before Regression
+```{r}
+#confidence and prediction intervals
+movies = read.csv("D:/SMU/Data Science/Assignment/Unit 10/Male Display Data Set.csv")
+movies.lm=lm(Tcell~Mass, data = movies)
+newx=movies$Mass
+newx=sort(newx)
+prd_c=predict(movies.lm, newdata= data.frame(Mass = newx), interval=c("confidence"), type = c("response"), level=0.99) 
+prd_p=predict(movies.lm, newdata= data.frame(Mass = newx), interval=c("prediction"), type = c("response"), level=0.99) 
+#Plot with confidence and prediction intervals
+plot(movies[,1],movies[,2],xlim = c(2,11), ylim = c(-0.1,0.8),xlab = "Mass",ylab = "Tcell", main = "Tcell versus Mass")
+abline(movies.lm, col = "red")
+lines(newx,prd_c[,2],col = "blue",lty = 2, lwd = 2)
+lines(newx,prd_c[,3],col = "blue", lty = 2, lwd = 2)
+lines(newx,prd_p[,2],col = "green", lty = 2, lwd = 2)
+lines(newx,prd_p[,3],col = "green", lty = 2, lwd = 2)
+abline(h = 0.3, col = "red", lwd = 4)
+#abline(v = 115, col = "green", lwd = 3)
+
+```
+
+# Calibrate interval for the mean t-cell
+```{r}
+calibrate(movies.lm, y0 = 0.3, level = 0.99, interval = "Wald", mean.response = TRUE, limit = FALSE)
+```
+
+# Calibrate interval for an individual t-cell
+```{r}
+calibrate(movies.lm, y0 = 0.3, level = 0.99, interval = "Wald", mean.response = FALSE, limit = FALSE)
+```
+
+# Residual
+```{r}
+plot(movies.lm$residuals, main="Scatterplot",
+   xlab="Predicted Values", ylab="Residuals", pch=19)
+```
+
+# Residual Histogram with Normal Distribution
+```{r}
+g = movies.lm$residuals
+m<-mean(g)
+std<-sqrt(var(g))
+hist(g, density=20, breaks=20, prob=TRUE, col="red",
+     xlab="Residuals", ylim=c(0, 8), 
+     main="Residual Histogram with Normal Distribution")
+curve(dnorm(x, mean=m, sd=std), 
+      col="darkblue", lwd=2, add=TRUE, yaxt="n")
+```
+# R-Squared
+```{r}
+summary(movies.lm)
+```
+

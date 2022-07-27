@@ -1,0 +1,191 @@
+---
+title: "Stat 1 R Code - Week 4"
+author: "SMU"
+date: "4/21/2022"
+output: html_document
+---
+
+# Cleaning the global environment
+```{r}
+rm(list = ls())
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(pwr)
+library(moonBook)
+library(webr)
+library(dplyr)
+library(emmeans)
+```
+
+# t-test visualization
+```{r}
+
+
+ # chi-squared test
+x=chisq.test(table(acs$sex,acs$DM))
+x
+plot(x)
+
+plot(t.test(acs$age,mu=63))
+
+
+x=var.test(age~DM,data=acs)
+x
+plot(x)
+
+x=t.test(age~DM,data=acs)
+x
+plot(x)
+
+plot(var.test(BMI~sex,data=acs))
+
+x=t.test(BMI~sex,data=acs,var.equal=TRUE)
+x
+plot(x)
+
+x=t.test(iris$Sepal.Width,iris$Petal.Width,paired=TRUE)
+plot(x)
+
+x=t.test(BMI~sex, data=acs,conf.level=0.99,alternative="greater",var.equal=TRUE)
+plot(x)
+```
+
+
+```{r}
+Database <- data.frame(read_csv("D:/SMU/Ph.D./Data Science/Statistical Foundation for Data Science/Assignment/Unit 3/Fire_age.csv"))
+data <- c(25, 19, 37, 29, 40, 28, 31)
+
+# One sample - two.sided or one.sided
+t.test(data, alternative = "two.sided")
+
+# One sample t.test with null hypothesis- two.sided or one.sided
+t.test(data, mu =21, alternative = "two.sided")
+
+# Two sample t.test - two.sided or one.sided
+t.test(Database$Aged ~ Database$Status, data = Database, conf.level = 0.99, var.equal = TRUE, alternative = "two.sided", ) # alternative can be, greater, less, and two.sided,
+t.test(Database$Aged[Database$Status == "Fired"], Database$Aged[Database$Status == "NotFired"], data = Database, conf.level = 0.99, var.equal = TRUE, alternative = "two.sided")
+
+# Two sample Welch's test - two.sided or one.sided
+t.test(Database$Aged~Database$Status, data = Database)
+```
+# Power 
+
+```{r}
+pwr.t.test(n = 25, d = (4/3), sig.level = 0.05, type = "two.sample")
+
+power.t.test(n = 10, delta = 2, sd = 2, sig.level = 0.05, type = "one.sample", alternative = "one.sided")
+
+power.t.test(n = 41, delta = .07, sd = .2, sig.level = 0.05, type = "one.sample", alternative = "one.sided")
+
+power.t.test(n = 40, delta = 1.7, sd = 9.5, sig.level = 0.05, type = "one.sample", alternative = "two.sided")
+
+# Different n
+library(pwr)
+pwr.t2n.test(n1 = 23, n2 = 24, d = 3/4.5, sig.level = 0.05, alternative = "two.sided")
+```
+
+# Effect size
+```{r}
+powerholder = c()
+effectsizes = seq(50,700, length = 500)
+for (i in 1:500) {
+  
+  powerholder[i] = power.t.test(n =8, delta = effectsizes[i], sd =500, sig.level = 0.1, type = "one.sample", alternative = "one.sided" )$power
+}
+
+plot(effectsizes,powerholder, type ="l", col = "blue", main = "Power Curve", ylab = "Power", xlab = "Sample Size", lwd = 3, ylim = c(0,1) )
+
+abline(h = .90, col = "red", lwd = 3)
+abline(v = 500, col = "red", lwd = 3)
+
+
+abline(h = .80, col = "green", lwd = 3)
+abline(v = 115, col = "green", lwd = 3)
+```
+
+# Sample Size
+```{r}
+powerholder = c()
+samplesizes = seq(1,500, length = 500)
+for (i in 1:500) {
+  
+  powerholder[i] = power.t.test(n =samplesizes[i], delta = 2, sd =6.151884, sig.level = 0.05, type = "two.sample", alternative = "one.sided" )$power
+}
+
+plot(samplesizes,powerholder, type ="l", col = "blue", main = "Power Curve", ylab = "Power", xlab = "Sample Size", lwd = 3, ylim = c(0,1) )
+
+abline(h = .95, col = "red", lwd = 3)
+abline(v = 195, col = "red", lwd = 3)
+
+
+abline(h = .80, col = "green", lwd = 3)
+abline(v = 115, col = "green", lwd = 3)
+
+```
+
+# Actual power at different n
+```{r}
+power.t.test(n = c(20,25,30,35,40), delta = 1.5, power = , sd = 3, sig.level = 0.05, type = "one.sample", alternative = "one.sided")
+```
+
+
+# Hypothesis test
+```{r}
+Database %>% ggplot(aes(x = Income2005)) + geom_histogram(color = "black") 
+
+Database %>% ggplot(aes(sample = Income2005)) + geom_qq_line() + geom_qq()
+
+Database %>% ggplot(aes(x = Income2005)) + geom_boxplot(color = "black") 
+```
+
+
+# Visualizing the power
+```{r}
+y1 <- stat_function(fun=dnorm,
+	args=list(mean=112, sd=25/sqrt(250)),
+                color="blue", size=1)
+y2 <- stat_function(fun = dnorm,
+         args=list(mean=107, sd=25/sqrt(250)),
+                color="red", size=1)
+
+g <- ggplot() + y1 + y2
+
+#constructing the alpha value for the distribution
+alpha <- qt(.05,df=249,ncp=112)
+
+#add the shading
+g + 
+stat_function(fun=dnorm,
+              args = list(mean=112, sd=25/sqrt(250)),
+              xlim=c(102,alpha1), geom="area",
+              fill="blue", alpha=0.6) + 
+  stat_function(fun=dnorm,
+              args = list(mean=107, sd=25/sqrt(250)),
+              xlim=c(alpha1, 117), geom="area",
+              fill="red", alpha=0.6) +
+  stat_function(fun=dnorm,
+	     args = list(mean=107, sd=25/sqrt(250)),
+              xlim=c(102,alpha1), geom="area",
+              fill="orange", alpha=0.3) +
+  labs(title = "Type I & Type II Errors. Power.",
+       x = "distribution of scores",
+       y = "density") +
+  annotate("text", x= 108.2, y = .01, label = "alpha") +
+  annotate("text", x= 109.5, y = .02, label = "beta") +
+  annotate("text", x= 107.7, y = .025, label = "power")
+```
+
+
+
+
+
+
+
+
+
+
+
+
