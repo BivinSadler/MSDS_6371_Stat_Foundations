@@ -1,2 +1,2 @@
 # This Folder Contains the Syllabus and   
-Other Materials Relevant to the Course!
+# Other Materials Relevant to the Course!
