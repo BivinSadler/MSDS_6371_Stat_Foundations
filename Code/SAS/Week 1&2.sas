@@ -14,8 +14,6 @@ var ages;
 run;
 
 
-
-
 /* One sample ttest*/
 proc ttest data= comber;
 var ages;
